@@ -41,4 +41,45 @@ Mostly we're going to be concerned with the processing of large quantities of da
 
 - GitHub : GitHub is a free, commonly used remote repository for git.  It lets us share a git repository across github itself and across multiple machines.
 
+- Package Manager : package managers download applications or parts of applications for you, installing and managing dependencies automatically.  Managing dependencies means that if the application I want requires another application to function, my package manager will get both of them for me (the application I want and its dependency).  Unix-like OSs have package managers for the OS that make installing new applications very easy.  Windows does as well, Chocolatey and Scoop are options, Brew is an option on MacOS.  On Ubuntu we'll use APT (Advanced Package Tool).
+  - Programming languages and runtime environments might also have package managers that we'll use to retrieve dependencies necessary for our code to function.
+
 Our notes and demos repo on github: https://github.com/AdamDKing/210104-usf-bigdata
+
+List of technologies for this week:
+  - WSL2 + Ubuntu (Windows only)
+    - 20.04 or 18.04 of Ubuntu
+    - You may need to enable virtualization in your BIOS.
+    - https://github.com/microsoft/WSL/issues/4103 will help if you get an error (Error: 0xc03a001a The requested operation could not be completed due to a virtual disk system limitation.  Virtual hard disk files must be uncompressed and unencrypted and must not be sparse."
+)
+  - On Mac, you will probably want a package manager (Homebrew?)
+
+  Install on Mac/Windows:
+  - vscode
+
+  Install on Mac/Ubuntu: (use a package manager)
+  - git
+  - java 8 (openjdk is good)
+  - sbt (scala build tool)
+  - scala (not totally necessary with sbt, but nice)
+
+Commands for installation on Ubuntu:
+1. sudo apt update
+2. sudo apt upgrade
+3. sudo apt install openjdk-8-jdk
+4. sudo apt install scala
+
+
+### Intro Scala
+
+## REPL : Read, Evalulate (Eval), Print, Loop
+
+Scala comes with a REPL that lets us write interactive Scala code on the command line.  This is very useful for exploring the language, because you get instant feedback on the commands you type.
+
+## Type system
+
+Scala is statically typed, which means our vars/vals have a type that cannot change.  However, unlike Java, Scala does not require that you declare type, you can instead take advantage of the type inference in Scala to determine the appropriate type for for you vars/vals.
+
+## val vs var
+
+Use val to declare "values" that cannot change.  Use var to declare "variables" that can change.
