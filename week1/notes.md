@@ -40,3 +40,5 @@ Mostly we're going to be concerned with the processing of large quantities of da
 - Git Repository : A repository (or repo) is how git saves your code.  We're going to have a git repo for notes and demos that I'll share today.  Your projects will each have a git repo, containing their code.
 
 - GitHub : GitHub is a free, commonly used remote repository for git.  It lets us share a git repository across github itself and across multiple machines.
+
+Our notes and demos repo on github: https://github.com/AdamDKing/210104-usf-bigdata
