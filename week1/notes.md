@@ -137,4 +137,16 @@ Pillars of OOP:
   - When we're writing and running code, we *mostly* don't care about the way that code is using processing power and memory, though we will care if we're optimizing code.
   - Abstraction in Scala is achieved in many different ways, but abstract classes and traits are two prominent tools.
 
-  ## Functional programming
+When learning OOP its fine to talk about Dog classes that extend Animal.  In practice, though, your objects and classes exist to do something in your application.  Actual classes you might have: DbConnectionUtil that provides utilities for connecting to a database, or TextFileCsvParser that parses the contents of a text file as a csv, ...
+
+## Functional programming
+
+FP is a programming paradigm where we write our application out of the composition and application of pure functions.  *Composition* is just combining functions, we can compose two functions to create a third function that consists of the functionality of both applied in sequence.  *Applying* functions just means that we run them on some data.
+Useful FP definitions:
+- Function: something that takes an input and produces an output
+- Pure Function: A function that does nothing other than take an input (arguments) and produce an output (return value).  It should not read any data other than its input and it should not have any effect other than returning its output.
+  - One way you can recognize a pure function is if your function *always* returns the same output given the same input.  A function that returns the square of its input will *always* return 4 if given 2.
+- Side Effect: Anything a function does other than return a value.  Printing to the console and writing to file are both side effects.  Changing the value of a variable outside the function is also a side effect.
+- Higher order functions: A higher order function is a function that takes function(s) as input, returns a function, or both.  Notable higher order functions for now : map, filter, reduce, foreach
+
+In Functional programming, we write our application out of pure functions.  Typically those pure functions operate on immutable data.  We almost never want to mutate data when writing in an FP style, instead producing new outputs.  In real functional programming, which we won't do, there are fancy methods for avoiding side effects in your functions while still writing to disk, printing to the console, having useful side effects occur in your application.  For us, we'll sometimes write in an FP style but we'll still write functions with side effects (impure functions) in order to save results to a database or print to the console or similar. 
