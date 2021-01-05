@@ -143,6 +143,49 @@ object Runner extends App {
 
   //println(myInt + 20000000000)
 
+  // Functions!
+
+  // A function takes an input and returns an output, though it doesn't actually have to do either
+  // When we're writing a function, we specify what input it can take by specifying its *parameters*
+  // When we're calling a function, we pass that input into the function as *arguments*
+  // A function can have no parameters, which means it takes no arguments
+  // When we're writing a function, we specify what it returns.  In Scala, it will return the result
+  // of the last line of the function by default.  If we don't want our function to return anything we
+  // can specify that it returns "Unit" (instead of void)
+
+  // There are multiple ways to define functions in Scala:
+  // this is a function that takes a String and returns a String
+  def func1(param1: String) :String = {
+    s"Input string was length ${param1.length}"
+  }
+
+  println(func1("Hello world!"))
+
+
+
+  def func2(param: String) : Unit = {
+      println(s"Input string was length ${param.length}")
+  }
+  func2("Howdy World!!")
+
+  //Which of the above functions is pure? func1, nice!
+
+  //We can also define functions as lambdas, which are anonymous inline functions
+
+  val myFunc = (param: String) => {s"Lambda with input: $param"}
+
+  println(myFunc("Adam"))
+
+  //foreach is a higher order function:
+  val mySeq = Seq("a","b","3","green","blue")
+  
+  mySeq.foreach(func2)
+
+  //use a lambda
+  mySeq.foreach((param) => {println(s"The string is $param")})
+
+  
+
   
 
 
