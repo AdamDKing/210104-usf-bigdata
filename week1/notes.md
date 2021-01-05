@@ -68,7 +68,18 @@ Commands for installation on Ubuntu:
 2. sudo apt upgrade
 3. sudo apt install openjdk-8-jdk
 4. sudo apt install scala
+5. follow commands https://www.scala-sbt.org/1.x/docs/Installing-sbt-on-Linux.html
 
+### Basic Unix Commands
+- ls: list files and directories in current directory
+- ls -a: list files and directories, including hidden
+- cd: change directory.  You can cd to a specific path, or if you just type cd, it takes you to your home directory (~)
+  - Home is denoted by a ~, and is found at /home/username
+- less: used to read files.  Can also use cat to print the contents of a file
+- sudo: elevate your permissions for a command.  Use with caution!
+- apt: use the Advanced Package Tool to install/manage/update packages
+- man: check the manual for a command.  very useful!
+- nano: very basic command line text editor
 
 ### Intro Scala
 
