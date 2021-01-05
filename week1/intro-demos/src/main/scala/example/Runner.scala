@@ -1,5 +1,10 @@
 package example
 
+//This is an import statement, it lets us use code from another file
+// Here we use the *fully qualified class name* to import ClassDemo
+// The fully qualified name is just the name of the package followed by the name of the class/object
+import example.classdemo.ClassDemo
+
 /**
   Runner is a basic demo of Scala functionality
 
@@ -12,185 +17,191 @@ object Runner extends App {
 
   println("Everything we write inside of our Runner that extends App is just going to run")
 
-  // val is used to declare constant values that cannot be changed
-  val myConstant = 45
+  ClassDemo.myMethod()
 
-  // var is used to declare variables that can be changed
-  var myVariable = 55
+  // This line creates an instance of our ClassDemo class
+  // the new keyword is used to create new objects
+  var myInstance = new ClassDemo()
+  myInstance = new ClassDemo() //create a second ClassDemo instance and assign it to myInstance
 
-  println(myConstant + myVariable)
+  myInstance.myInstanceMethod()
 
-  // Use // to write comments in Scala, lines of text that are not evaluated as code
-  /*
-    This syntax works for multiline comments
-  */
+  ClassDemo.runExamples()
 
-  // Typing: Scala uses static typing, but has a type inference system
-  //val myInt : Int = 45
-  val myIntTwo = 55
+  //introDemo()
 
-  // Nice Types to start with in Scala:
-  val myByte : Byte = 10 // integral (whole number) type of size 1 byte, or 8 bits
-  val myShort : Short = 100 // integral type of size 2 bytes, 16 bits
-  val myInt : Int = 1000 // integral type of size 4 bytes, 32 bits
-  println("Int max value: " + Int.MaxValue)
-  println("Short max value: " + Short.MaxValue)
-  println(s"Byte max value: ${Byte.MaxValue}") // String Interpolation
-  val myLong : Long = 10000L //integral type of size 8 bytes, 64 bits
-  println(s"Long max value: ${Long.MaxValue}")
+  def introDemo():Unit = {
+    // val is used to declare constant values that cannot be changed
+    val myConstant = 45
 
-  //Decimal types: Double and Float
-  // Decimal types don't have a max or a min, instead the more bytes they use
-  // the more precise they are.
-  // generally speaking, a float will be accurate out to 5 or 6 decimal places
-  // and a double will be accurate out to 15 or 16
-  val myFloat : Float = 33.33f // decimal type of size 4 bytes, 32 bits
-  val myDouble : Double = 44.44 // decimal type of size 8 byes, 64 bits
+    // var is used to declare variables that can be changed
+    var myVariable = 55
 
-  // The types above that use more memory are mostly fine to use everywhere
-  // only be concerened about efficient storage when it really matters.
+    println(myConstant + myVariable)
 
-  val myBoolean : Boolean = true // takes values true and false
+    // Use // to write comments in Scala, lines of text that are not evaluated as code
+    /*
+        This syntax works for multiline comments
+    */
 
-  // This is an if statement in Scala, its our first piece of control flow
-  // if-else statements are a branching structure, which cause one out of two blocks of
-  // code to evaluate.
-  if (myBoolean) {
-      println("myBoolean was true!")
-  } else {
-      println("myBoolean was false :(")
-  }
+    // Typing: Scala uses static typing, but has a type inference system
+    //val myInt : Int = 45
+    val myIntTwo = 55
 
-  val condition : Boolean = myInt > 5
+    // Nice Types to start with in Scala:
+    val myByte : Byte = 10 // integral (whole number) type of size 1 byte, or 8 bits
+    val myShort : Short = 100 // integral type of size 2 bytes, 16 bits
+    val myInt : Int = 1000 // integral type of size 4 bytes, 32 bits
+    println("Int max value: " + Int.MaxValue)
+    println("Short max value: " + Short.MaxValue)
+    println(s"Byte max value: ${Byte.MaxValue}") // String Interpolation
+    val myLong : Long = 10000L //integral type of size 8 bytes, 64 bits
+    println(s"Long max value: ${Long.MaxValue}")
 
-  println(condition)
+    //Decimal types: Double and Float
+    // Decimal types don't have a max or a min, instead the more bytes they use
+    // the more precise they are.
+    // generally speaking, a float will be accurate out to 5 or 6 decimal places
+    // and a double will be accurate out to 15 or 16
+    val myFloat : Float = 33.33f // decimal type of size 4 bytes, 32 bits
+    val myDouble : Double = 44.44 // decimal type of size 8 byes, 64 bits
 
-  if (condition) {
-      println(s"$myInt was greater than 5")
-  }
+    // The types above that use more memory are mostly fine to use everywhere
+    // only be concerened about efficient storage when it really matters.
 
-  //second flow control, interesting syntax for for-loops in Scala:
-  // for loops are a looping structure, which means a block of code will be repeated
-  // 0 or more times
-  for (i <- 10 to -10 by -2) {
-      //this will loop, and i will take values from 0 to 10
-      println(s"value of i: $i")
-  }
+    val myBoolean : Boolean = true // takes values true and false
 
-  // This 1 to 20 by 3 is a Range, one of the things we can use with For loops
-  // however, we can use a for loop over most sequential data structures (values in order)
-  println(1 to 20 by 3)
+    // This is an if statement in Scala, its our first piece of control flow
+    // if-else statements are a branching structure, which cause one out of two blocks of
+    // code to evaluate.
+    if (myBoolean) {
+        println("myBoolean was true!")
+    } else {
+        println("myBoolean was false :(")
+    }
 
-  val myFavoriteNumbers : Seq[Int] = Seq(3,27,33,444) //Seq is a sequence
-  for (number <- myFavoriteNumbers) {
-      println(s"Adam's favorite number: $number")
-  }
+    val condition : Boolean = myInt > 5
 
-  //Sequence is a collection, it's a rich data structure that contains sequential values of a single type
-  // A Seq[Int] will contain only Ints, and an Seq[String] will contain only Strings.
-  // The [] where we declare the type contained in a Seq are how we write "generics" in Scala
-  // A generic is just a parameter for type -- for now just know how to use them with Seq
+    println(condition)
 
-  //array of strings, another use of generics:
-  val myStrings: Array[String] = Array("a","b", "c", "d")
-  for (string <- myStrings) {
-      println(string)
-  }
+    if (condition) {
+        println(s"$myInt was greater than 5")
+    }
 
-  //Every single class in Scala is a subclass of Any.  Ints are subclasses of Any, Strings are subclasses of Any
-  // Doubles are subclasses of Any, and any classes we write will be subclasses of Any.
-  
-  //Object Polymorphism means that objects that are members of child classes can be treated as members
-  // of their parent classes in the appropriate context.
-  //This means that our Strings and Ints, both being subclasses of Any, can be placed in a Seq[Any].
+    //second flow control, interesting syntax for for-loops in Scala:
+    // for loops are a looping structure, which means a block of code will be repeated
+    // 0 or more times
+    for (i <- 10 to -10 by -2) {
+        //this will loop, and i will take values from 0 to 10
+        println(s"value of i: $i")
+    }
 
-  //There is another type of Polymorphism, Method Polymorphism, that involves overloading and overriding methods
+    // This 1 to 20 by 3 is a Range, one of the things we can use with For loops
+    // however, we can use a for loop over most sequential data structures (values in order)
+    println(1 to 20 by 3)
 
-  //There is no switch in Scala, but there are match expressions:
-  val myNumber = 21
-  val matchResult = myNumber match {
-      //inside a of a match you have multiple cases
-      case 5 => "myNumber was five"
-      case 10 => "myNumber was ten"
-      case 25 => {
-          "myNumber was twenty-five"
-      }
-      //we can have variables and variables in expressions(!) in our match cases:
-      case anything if anything > 20 => s"myNumber was $anything and greater than 20"
-      case _ => "myNumber was not five, ten, or twenty-five, and was less than 20"
-  }
+    val myFavoriteNumbers : Seq[Int] = Seq(3,27,33,444) //Seq is a sequence
+    for (number <- myFavoriteNumbers) {
+        println(s"Adam's favorite number: $number")
+    }
 
-  println(matchResult)
+    //Sequence is a collection, it's a rich data structure that contains sequential values of a single type
+    // A Seq[Int] will contain only Ints, and an Seq[String] will contain only Strings.
+    // The [] where we declare the type contained in a Seq are how we write "generics" in Scala
+    // A generic is just a parameter for type -- for now just know how to use them with Seq
 
-  // while loop loops while a condition is true and stops looping when it is false
-  // while loops may never run, if the condition is false
+    //array of strings, another use of generics:
+    val myStrings: Array[String] = Array("a","b", "c", "d")
+    for (string <- myStrings) {
+        println(string)
+    }
 
-  var myCounter = 0
-  while(myCounter < 10) {
-      println(myCounter) // print out myCounter
-      myCounter += 1 // add one to myCounter
-  }
+    //Every single class in Scala is a subclass of Any.  Ints are subclasses of Any, Strings are subclasses of Any
+    // Doubles are subclasses of Any, and any classes we write will be subclasses of Any.
+    
+    //Object Polymorphism means that objects that are members of child classes can be treated as members
+    // of their parent classes in the appropriate context.
+    //This means that our Strings and Ints, both being subclasses of Any, can be placed in a Seq[Any].
 
-  //this while loop never runs:
-  while(myCounter < 5) {
-      println("This will never print because mycounter is > 5")
-  }
+    //There is another type of Polymorphism, Method Polymorphism, that involves overloading and overriding methods
 
-  //we can use a do-while loop, which functions like a while loop but will always run at least once
-  do {
-      println("this will run at least once, regardless of condition")
-  } while(myCounter < 5)
+    //There is no switch in Scala, but there are match expressions:
+    val myNumber = 21
+    val matchResult = myNumber match {
+        //inside a of a match you have multiple cases
+        case 5 => "myNumber was five"
+        case 10 => "myNumber was ten"
+        case 25 => {
+            "myNumber was twenty-five"
+        }
+        //we can have variables and variables in expressions(!) in our match cases:
+        case anything if anything > 20 => s"myNumber was $anything and greater than 20"
+        case _ => "myNumber was not five, ten, or twenty-five, and was less than 20"
+    }
 
-  //println(myInt + 20000000000)
+    println(matchResult)
 
-  // Functions!
+    // while loop loops while a condition is true and stops looping when it is false
+    // while loops may never run, if the condition is false
 
-  // A function takes an input and returns an output, though it doesn't actually have to do either
-  // When we're writing a function, we specify what input it can take by specifying its *parameters*
-  // When we're calling a function, we pass that input into the function as *arguments*
-  // A function can have no parameters, which means it takes no arguments
-  // When we're writing a function, we specify what it returns.  In Scala, it will return the result
-  // of the last line of the function by default.  If we don't want our function to return anything we
-  // can specify that it returns "Unit" (instead of void)
+    var myCounter = 0
+    while(myCounter < 10) {
+        println(myCounter) // print out myCounter
+        myCounter += 1 // add one to myCounter
+    }
 
-  // There are multiple ways to define functions in Scala:
-  // this is a function that takes a String and returns a String
-  def func1(param1: String) :String = {
-    s"Input string was length ${param1.length}"
-  }
+    //this while loop never runs:
+    while(myCounter < 5) {
+        println("This will never print because mycounter is > 5")
+    }
 
-  println(func1("Hello world!"))
+    //we can use a do-while loop, which functions like a while loop but will always run at least once
+    do {
+        println("this will run at least once, regardless of condition")
+    } while(myCounter < 5)
 
+    //println(myInt + 20000000000)
 
+    // Functions!
 
-  def func2(param: String) : Unit = {
-      println(s"Input string was length ${param.length}")
-  }
-  func2("Howdy World!!")
+    // A function takes an input and returns an output, though it doesn't actually have to do either
+    // When we're writing a function, we specify what input it can take by specifying its *parameters*
+    // When we're calling a function, we pass that input into the function as *arguments*
+    // A function can have no parameters, which means it takes no arguments
+    // When we're writing a function, we specify what it returns.  In Scala, it will return the result
+    // of the last line of the function by default.  If we don't want our function to return anything we
+    // can specify that it returns "Unit" (instead of void)
 
-  //Which of the above functions is pure? func1, nice!
+    // There are multiple ways to define functions in Scala:
+    // this is a function that takes a String and returns a String
+    def func1(param1: String) :String = {
+        s"Input string was length ${param1.length}"
+    }
 
-  //We can also define functions as lambdas, which are anonymous inline functions
-
-  val myFunc = (param: String) => {s"Lambda with input: $param"}
-
-  println(myFunc("Adam"))
-
-  //foreach is a higher order function:
-  val mySeq = Seq("a","b","3","green","blue")
-  
-  mySeq.foreach(func2)
-
-  //use a lambda
-  mySeq.foreach((param) => {println(s"The string is $param")})
-
-  
-
-  
+    println(func1("Hello world!"))
 
 
 
+    def func2(param: String) : Unit = {
+        println(s"Input string was length ${param.length}")
+    }
+    func2("Howdy World!!")
 
+    //Which of the above functions is pure? func1, nice!
 
+    //We can also define functions as lambdas, which are anonymous inline functions
+
+    val myFunc = (param: String) => {s"Lambda with input: $param"}
+
+    println(myFunc("Adam"))
+
+    //foreach is a higher order function:
+    val mySeq = Seq("a","b","3","green","blue")
+    
+    mySeq.foreach(func2)
+
+    //use a lambda
+    mySeq.foreach((param) => {println(s"The string is $param")})
+}
 
 }
