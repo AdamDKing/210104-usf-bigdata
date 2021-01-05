@@ -25,3 +25,7 @@ target/
 .scala_dependencies
 .worksheet
 *.tsv
+
+.bloop/
+.metals/
+.vscode/

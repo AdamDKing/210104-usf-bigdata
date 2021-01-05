@@ -72,12 +72,78 @@ object Runner extends App {
   //second flow control, interesting syntax for for-loops in Scala:
   // for loops are a looping structure, which means a block of code will be repeated
   // 0 or more times
-  for (i <- -10 to 10 by 2) {
+  for (i <- 10 to -10 by -2) {
       //this will loop, and i will take values from 0 to 10
       println(s"value of i: $i")
   }
 
+  // This 1 to 20 by 3 is a Range, one of the things we can use with For loops
+  // however, we can use a for loop over most sequential data structures (values in order)
+  println(1 to 20 by 3)
+
+  val myFavoriteNumbers : Seq[Int] = Seq(3,27,33,444) //Seq is a sequence
+  for (number <- myFavoriteNumbers) {
+      println(s"Adam's favorite number: $number")
+  }
+
+  //Sequence is a collection, it's a rich data structure that contains sequential values of a single type
+  // A Seq[Int] will contain only Ints, and an Seq[String] will contain only Strings.
+  // The [] where we declare the type contained in a Seq are how we write "generics" in Scala
+  // A generic is just a parameter for type -- for now just know how to use them with Seq
+
+  //array of strings, another use of generics:
+  val myStrings: Array[String] = Array("a","b", "c", "d")
+  for (string <- myStrings) {
+      println(string)
+  }
+
+  //Every single class in Scala is a subclass of Any.  Ints are subclasses of Any, Strings are subclasses of Any
+  // Doubles are subclasses of Any, and any classes we write will be subclasses of Any.
+  
+  //Object Polymorphism means that objects that are members of child classes can be treated as members
+  // of their parent classes in the appropriate context.
+  //This means that our Strings and Ints, both being subclasses of Any, can be placed in a Seq[Any].
+
+  //There is another type of Polymorphism, Method Polymorphism, that involves overloading and overriding methods
+
+  //There is no switch in Scala, but there are match expressions:
+  val myNumber = 21
+  val matchResult = myNumber match {
+      //inside a of a match you have multiple cases
+      case 5 => "myNumber was five"
+      case 10 => "myNumber was ten"
+      case 25 => {
+          "myNumber was twenty-five"
+      }
+      //we can have variables and variables in expressions(!) in our match cases:
+      case anything if anything > 20 => s"myNumber was $anything and greater than 20"
+      case _ => "myNumber was not five, ten, or twenty-five, and was less than 20"
+  }
+
+  println(matchResult)
+
+  // while loop loops while a condition is true and stops looping when it is false
+  // while loops may never run, if the condition is false
+
+  var myCounter = 0
+  while(myCounter < 10) {
+      println(myCounter) // print out myCounter
+      myCounter += 1 // add one to myCounter
+  }
+
+  //this while loop never runs:
+  while(myCounter < 5) {
+      println("This will never print because mycounter is > 5")
+  }
+
+  //we can use a do-while loop, which functions like a while loop but will always run at least once
+  do {
+      println("this will run at least once, regardless of condition")
+  } while(myCounter < 5)
+
   //println(myInt + 20000000000)
+
+  
 
 
 

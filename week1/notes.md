@@ -94,3 +94,47 @@ Scala is statically typed, which means our vars/vals have a type that cannot cha
 ## val vs var
 
 Use val to declare "values" that cannot change.  Use var to declare "variables" that can change.
+
+## Control Flow
+
+See the Runner.scala in intro-demos for control flow! if-else, match, for and while loops
+
+### What is Scala?
+
+The name Scala comes from "Scalable Language", and Scala was written by Martin Odersky, one of the contributors to the java compiler (javac).  Scala is written on top of Java.  In order to write and run Scala, you need Java tools.
+
+Java is a very popular OOP language used in enterprise.  The important pieces to writing and running Java are the JDK (Java Development Kit), the JRE (Java Runtime Environment), and the JVM (Java Virtual Machine).  The JDK is useful for Java developers, while the JRE + JVM together (the JVM is contained in the JRE) is useful to run Java code on any system.  When Java developers write code, they write .java files.  The JDK is then used (javac) to transform that .java code into *bytecode* that runs on the JVM.  Bytecode is contained in .class files instead of .java files.  Then, this bytecode can be run on any JVM on any system, and the JVM compiles the bytecode down into machine language for that system.  The major advantage of this approach is that you can compile your code to bytecode once, then that bytecode can be used on many different architectures.
+
+Most systems have JVMs available, so making use of the JVM means your code can run almost everywhere.
+
+Scala is written to compile down to Java bytecode.  This means that we write .scala files, and under the hood those are compiled down to .class files which can run on JVMs on any system.  Scala is not the only language to do this -- the JVM is widespread and highly performant, so there are many languages that take advantage of it.  In addition, we're able to use Java dependencies in Scala code.  Since Java is so popular, tooling exists for Java that may not exist for Scala.  We're able to use the Java tooling.
+
+Scala is:
+- A High level language, meaning it abstracts away the hardware and runs on the JVM.
+- Statically typed, meaning variables cannot change types
+- Has a type inference system, so type does not always need to be declared.
+- compiles down to .class files that run on the JVM and is interoperable with Java code
+- Scala is built on Java, so supports almost all Java functionality, but draws inspiration from many other languages
+- Supports OOP (Object Oriented Programming) Paradigm
+- Supports FP (Functional Programming) Paradigm
+
+### Imperative programming
+
+Writing a program in Imperative style means that your write the program as a list of instructions for the computer to carry out.  Runner.scala is imperative, it just tells the computer to run a bunch of statements for our demos.  OOP and FP are easier to understand when contrasted with Imperative programming.  Both of those paradigms are used when your programs become large/complicated.
+
+### Object-Oriented Programming
+
+OOP is a programming paradigm where your write your application by defining classes and instantiating objects from those classes.  The objects have state and behaviour, and the interactions between the objects constitute the functionality of your application.  Typically the state of the objects in OOP evolves over time, but the evolution of state is managed by the objects themselves (encapsulation!).
+Pillars of OOP:
+- Encapsulation: Objects control access to their own state and behaviour.  This is enabled in Scala (+ Java) with *access modifiers*
+  -In Scala, we can mark members of a class as private (accessible only in that class), protected (accessible in that class and subclasses in the package), and public (accessible everywhere).  The default is public.
+- Inheritance: Child classes inherit state and behaviour from their parent classes.  This lets us share functionality from parent to child and reuse code.
+- Polymorphism: "Many forms", your objects and methods can take multiple forms depending on the context
+  - Object polymorphism means instances of child classes can be treated as instances of parent classes
+  - Method polymorphism means that a single method might have different functionalty based on the arguments given or the object it is attached to. (Method overloading and overriding)
+- Abstraction: Focusing on relevant details in a given context while ignoring irrelevant details in that context.
+  - When we're using a TV remote to change the channel, we only really care about the remote having buttons that are labelled and we press the buttons corresponding to the channel we want.  We're not interested in the electronics inside the remote, how the button press transfers information to your television, what the television does with the received signal, how channel 5 is coming to your TV from outside, ...
+  - When we're writing and running code, we *mostly* don't care about the way that code is using processing power and memory, though we will care if we're optimizing code.
+  - Abstraction in Scala is achieved in many different ways, but abstract classes and traits are two prominent tools.
+
+  ## Functional programming
