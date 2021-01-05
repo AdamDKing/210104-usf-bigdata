@@ -37,6 +37,73 @@ object ClassDemo {
         //adam.lastName = "Goldblum"
 
         printPerson(adam)
+
+        //one way to provide default values: add a default param value "King"
+        class DetailedPerson(var firstName : String, val lastName : String = "King") {
+            //here we are defining both the class and the constructor
+            println("constructor begins!")
+            //we can add fields using val and var
+            //any values we hardcode here will apply to all instance of DetailedPerson
+            val ssn = 438238764
+            var age = 28
+
+            //we can define methods
+            def sayHello() : Unit = {
+                //access the field on the object in the method
+                println(s"$firstName says Hello!")
+            }
+
+            //the override keyword here means that we're replacing behaviour inheritied from
+            // a parent class.  Default gives us example.classdemo.ClassDemo$DetailedPerson$1@40fd0443
+            // We'd prefer a more sensible toString
+            override def toString(): String = {
+                s"$firstName $lastName, age $age, ssn $ssn"
+            }
+        }
+        
+
+        val dave = new DetailedPerson("Dave")
+        dave.sayHello()
+        println(dave.toString())
+        //incidentally, every single object has a toString method.
+        //println will call the object's tostring method in order to print it
+        println(dave)
+        //where is the default toString defined? the Any class!
+        // Object polymorphism means println can treat DetailedPerson as Any
+        // Method polymorphism means the .toString called will actually 
+        //  be the .toString we defined on DetailedPerson
+        // very similar to the object class in Java
+
+        val jimmy = new DetailedPerson("Jimmy", "Jones")
+        jimmy.sayHello()
+
+        // class practice and multiple constructors.  In scala we have a primary constructor and optional
+        // auxiliiary constructors.
+        class Fruit(var color : String, var tastiness: Int, var sourness: Int, var numSeeds: Int = 4) {
+            println("beginning primary fruit constructor")
+
+            //we can define other constructors using the 'this' keyword:
+            def this(color: String, tastiness: Int) {
+                //set a default value for sourness, based on tastiness
+                this(color, tastiness, tastiness / 2)
+                println("auxilliary constructor")
+                //our auxilliary constructors can take different args
+                // they need to call the primary constructor at some point
+                
+            }
+
+        }
+
+        //using aux constructor
+        val lime = new Fruit("green", 20)
+        //using primary constructor with default param
+        val lemon = new Fruit("yellow", 15, 15)
+        //using primary constructor overwriting default param
+        val apple = new Fruit("red", 20, 0, 10)
+        //can specify parameter names for your arguments if you want to change the order
+        val pear = new Fruit(tastiness = 30, color = "green")
+
+
         
 
 
