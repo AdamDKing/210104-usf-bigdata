@@ -53,6 +53,7 @@
 - What is recursion?
 - What do we need to include in any effective recursive function?
 
+
 - What is the Stack? What is stored on the Stack?
 - What is the Heap? What is stored on the Heap?
 - What is garbage collection?
