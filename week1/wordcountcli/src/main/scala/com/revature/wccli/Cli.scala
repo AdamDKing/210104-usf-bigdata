@@ -2,6 +2,7 @@ package com.revature.wccli
 
 import scala.io.StdIn
 import scala.util.matching.Regex
+import java.io.FileNotFoundException
 
 /** A CLI that allows the user to interact with our application
   *
@@ -37,6 +38,9 @@ class Cli {
     println("Bonus Commands:")
     println("echo [string to repeat] : repeats a string back to the user")
     println("addFive [number] : returns the given number, plus 5")
+    println(
+      "printTextContent [filename] : prints the text contained in a given file"
+    )
   }
 
   /** This runs the menu, this is the entrypoint to the Cli class.
@@ -48,7 +52,7 @@ class Cli {
     printWelcome()
     var continueMenuLoop = true
     while (continueMenuLoop) {
-      printOptions() 
+      printOptions()
       // take user input using StdIn.readLine
       // readLine is *blocking* which means that it pauses program execution while it waits for input
       // this is fine for us, but we do want to take note.
@@ -63,6 +67,10 @@ class Cli {
         }
         case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("addfive") => {
           addFive(arg)
+        }
+        case commandArgPattern(cmd, arg)
+            if cmd.equalsIgnoreCase("printtextcontent") => {
+          printTextContent(arg)
         }
         case commandArgPattern(cmd, arg) => {
           println(s"""Failed to parse command: "$cmd" with arguments: "$arg"""")
@@ -81,6 +89,18 @@ class Cli {
     } catch {
       case nfe: NumberFormatException => {
         println(s"""Failed to parse "$arg" as a double""")
+      }
+    }
+  }
+
+  def printTextContent(arg: String) = {
+    try {
+      println(FileUtil.getTextContent(arg))
+    } catch {
+      case fnfe: FileNotFoundException => {
+        println(s"Failed to find file: ${fnfe.getMessage}")
+        println(s"""Found top level files:
+              ${FileUtil.getTopLevelFiles.mkString(", ")}""")
       }
     }
   }
