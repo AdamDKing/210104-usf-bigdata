@@ -64,45 +64,7 @@ class Cli {
       input match {
         case commandArgPattern(cmd, arg)
             if cmd.equalsIgnoreCase("wordcount") => {
-          try {
-            val text = FileUtil.getTextContent(arg)
-            //we're going to have a chain of methods on text that specifies how we
-            // want to transform it to arrive at a count of the frequency of each word:
-            // replaceAll will find instances of the first String and replace them with the second
-            // We're going to use a pinch of regex to replace all punctuation with nothing
-            // make all characters lowercase
-            // split the String into an Array[String] on space characters
-
-            // TODO: handle contractions better than just ignoring them
-            text.replaceAll("\\p{Punct}", "")
-              .toLowerCase()
-              .split("\\s+")
-              .groupMapReduce(word => word)(word => 1)(_ + _)
-              .toSeq
-              .sortBy({ case (word, count) => count })
-              .foreach({ case (word, count) => println(s"$word, $count") })
-
-            //groupMapReduce! it's OK to not get this yet
-            // the first function is used to create groups from our array of Strings
-            // in general, elements with the same output from this function are grouped together
-            // word => word means that the words are grouped together based on their identity
-            // we end up with all the "the" words groups, all the "only" words groups, ...
-            //
-            // the second function is used to map (transform) the words.  Here we transform each word
-            // into its count, which is easy.  Every word counts for 1.  Since there are 5 instances
-            // of "only", each of those instances of "only" in the "only" group is transformed into a 1
-            //
-            // the third function is a reducer.  It specifies how we combine all the transformed outputs
-            // from the second function in each group.  This reducer just sums them.  So the five 1 values
-            // we have in the "only" group are all summed and reduced to "5"
-            
-          } catch {
-            case fnfe: FileNotFoundException => {
-              println(s"Failed to find file: ${fnfe.getMessage}")
-              println(s"""Found top level files:
-              ${FileUtil.getTopLevelFiles.mkString(", ")}""")
-            }
-          }
+          wordcount(arg)
         }
         case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("echo") => {
           println(arg)
@@ -141,6 +103,49 @@ class Cli {
   def printTextContent(arg: String) = {
     try {
       println(FileUtil.getTextContent(arg))
+    } catch {
+      case fnfe: FileNotFoundException => {
+        println(s"Failed to find file: ${fnfe.getMessage}")
+        println(s"""Found top level files:
+              ${FileUtil.getTopLevelFiles.mkString(", ")}""")
+      }
+    }
+  }
+
+  def wordcount(arg: String) = {
+    try {
+      val text = FileUtil.getTextContent(arg)
+      //we're going to have a chain of methods on text that specifies how we
+      // want to transform it to arrive at a count of the frequency of each word:
+      // replaceAll will find instances of the first String and replace them with the second
+      // We're going to use a pinch of regex to replace all punctuation with nothing
+      // make all characters lowercase
+      // split the String into an Array[String] on space characters
+
+      // TODO: handle contractions better than just ignoring them
+      text
+        .replaceAll("\\p{Punct}", "")
+        .toLowerCase()
+        .split("\\s+")
+        .groupMapReduce(word => word)(word => 1)(_ + _)
+        .toSeq
+        .sortBy({ case (word, count) => count })
+        .foreach({ case (word, count) => println(s"$word, $count") })
+
+      //groupMapReduce! it's OK to not get this yet
+      // the first function is used to create groups from our array of Strings
+      // in general, elements with the same output from this function are grouped together
+      // word => word means that the words are grouped together based on their identity
+      // we end up with all the "the" words groups, all the "only" words groups, ...
+      //
+      // the second function is used to map (transform) the words.  Here we transform each word
+      // into its count, which is easy.  Every word counts for 1.  Since there are 5 instances
+      // of "only", each of those instances of "only" in the "only" group is transformed into a 1
+      //
+      // the third function is a reducer.  It specifies how we combine all the transformed outputs
+      // from the second function in each group.  This reducer just sums them.  So the five 1 values
+      // we have in the "only" group are all summed and reduced to "5"
+
     } catch {
       case fnfe: FileNotFoundException => {
         println(s"Failed to find file: ${fnfe.getMessage}")

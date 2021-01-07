@@ -185,3 +185,16 @@ fun3()
 - One of very few features *removed* from Java in Scala is the concept of checked vs unchecked Exceptions.
 
 ### Stack and Heap
+
+We're to talk a bit about the internal memory model of the JVM.  Remember that Scala is built on top of Java, all Scala code is converted to Java Bytecode (.class files) and runs on the Java Virtual Machine (JVM).
+
+There are two main areas of memory.  One of them is the Stack, the other is the Heap.  The Stack is where method execution happens.  The Heap is where objects are stored.  Let's talk about the Heap first.  Whenever we create a new object, the constructor for that object runs.  The first thing the constructor does is allocate some space on the Heap for the object.  Then, all the fields in that object are stored in that space.  The constructor then *returns* a reference to that area of memory.  This reference is how we retrieve and interact with the data stored in the object on the heap.  We sometimes call objects "refence types" instead of "primitive types" because we use references to access them.  A "primitive" is something we need to pay attention to in Java code, but we don't really need to worry about it in Scala code.  A primitive is not a reference type, instead the primitive just contains its actual value.
+
+Every single method call that occurs in the lifetime of our application goes on the Stack to be resolved.  Our application begins running when the JVM calls our (in Scala) class Runner extends App, or our main method.  The Stack is a stack (the data structure) which means it is LIFO (Last In First Out).  New items placed on the stack are the first items to be taken off.  This means our main method (our entrypoint) goes on the bottom of the Stack, and all the methods it calls go above it on the stack.
+
+Each method called goes on the stack as a *stack frame*.  Whatever method is currently on the top of the stack is the method currently being executed.  If that method, being executed, calls another method, the new method call goes on the stack and begins execution.  Our program continues running in the way, with methods popping on and off the stack, until we reach the end of the main method.  When main pops off the stack, our program exits.
+
+The stack frame associated with each method call stores primitive values and references to the Heap (object references discussed above)
+
+
+
