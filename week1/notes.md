@@ -156,3 +156,32 @@ In Functional programming, we write our application out of pure functions.  Typi
 Functional Programming is a paradigm, it's a way to write/structure your applications.  Some languages support FP and some do not.  The essential feature to support FP is having functions as *first-class citizens* of the language.  Some data type being a first class citizen of a language means that your can pass that data type into function, return the data type from functions, and store that data type in variabes and data structures.
 
 Therefore, functions as first class citizens (which Scala supports) means that we can pass functions into other functions, return functions from other functions, and store functions in variables and data structures.
+
+### Errors and Exceptions
+
+Generally speaking, there are two kinds of problems that can happen in your running Scala program:
+these are erros and exceptions.  Both of them are objects, with some special behaviour in the Scala (Java) runtime.  The main difference between them is the sort of problem they represent and the expected behaviour of our code in response to them:
+- Exception: some exceptional behaviour, something unexpected and often bad has occurred.  Most of the time, your application should attempt to recover from Exceptions.  We should write our own code to throw Exceptions when exceptional behaviour happens, and then we can write other code elsewhere to catch and handle those Exceptions.  We do both sides (throw and catch) at different places in the codebase.  Typically you throw Exceptions where the problem occurs, and you handle exceptions where you have the ability to fix the problem.  Common exceptions: ArrayIndexOutOfBoundsException, ArithmeticException, FileNotFoundException, RuntimeException (general class for Exceptions that happen while app is running), NullPointerException (this exception is what gets thrown when you attempt to call a method or access a field on something that is null.  null is the value that your vals and vars have before your assign something to them).
+- Error: an Error most often represents a problem with the JVM itself, some problem with the basic machinery used to run your application.  Common Errors: OutOfMemoryError and StackOverflowError.  OutOfMemoryError happens when your use up too much memory storing objects.  StackOverflowError happens when you call too many methods/functions.  We often should not and cannot recover from Errors.
+- Handling Exceptions with try/catch/finally: When an Exception is thrown, regular program flow ceases.  Instead, the exception gets thrown to all the methods/functions previously called in reverse order.
+- Example:
+```
+def fun1() = {
+  println("hi")
+  //throw new Exception("my message!")
+}
+def fun2() = {
+  println("f2")
+  fun1()
+}
+def fun3() = {
+  fun2()
+  println("f3")
+}
+fun3()
+```
+- One of those methods/functions might (and should) catch the Exception and handle it.  If this doesn't happen, the Exception will continue being thrown all the way down to the JVM, where the JVM will print a stack trace and exit.  Exceptions should not bring out program to a halt, so we need to write the logic to catch and handle them before they reach the JVM.
+- Exceptions and Errors are arranged in a class hierarchy.  The parent of all of them is Throwable, which has direct children Exception and Error.  RuntimeException extends from (is a child of) Exception.  Often Exceptions in a single domain will have a shared parent (like IOException).
+- One of very few features *removed* from Java in Scala is the concept of checked vs unchecked Exceptions.
+
+### Stack and Heap
