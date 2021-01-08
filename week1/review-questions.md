@@ -4,7 +4,6 @@
 - What command moves changes from our local repo to GitHub?
 - What two commands are used in sequence to save changes to our local repo?
 - What is BASH?
-- What does the PATH environment variable do?
 - What is the JDK and what does it let us do?
 - What is the JRE and what does it let us do?
 - What's the name for the code written in .class files?
@@ -33,7 +32,6 @@
 - How do operators work in Scala?  Where is "+" defined?
 - What are the ways we could provide default values for a field?
 - How do we define an auxiliary constructor?
-- What is an enumeration?
 - What is a REPL?
 - How does the Scala REPL store the results of evaluated expressions?
 
@@ -50,8 +48,6 @@
 - What does filter do?
 - What does reduce do?
 - What does it mean that a function returns Unit in Scala?
-- What is recursion?
-- What do we need to include in any effective recursive function?
 
 
 - What is the Stack? What is stored on the Stack?
@@ -83,8 +79,15 @@
 - What methods get generated when we declare a case class?
 - What does the apply method do?
 - What is a Thread?
-- What is a Future?
 - In what situations might we want to use multiple threads? (just some)
+
+
+Check out the basics for the following questions, but we didn't quite get here:
+- What does the PATH environment variable do?
+- What is an enumeration?
+- What is recursion?
+- What do we need to include in any effective recursive function, to avoid stackoverflow?
+- What is a Future?
 - How can we do something with the result of a Future?
 - How does a Future return a value or exception?
 - How does the onComplete callback function work?
