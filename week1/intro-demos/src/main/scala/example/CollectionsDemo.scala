@@ -5,6 +5,7 @@ import example.classdemo.ClassDemo
 import scala.collection.mutable.Map
 import scala.collection.mutable.Set
 import scala.io.Source
+import scala.collection.mutable.HashSet
 
 object CollectionsDemo {
   //Scala fun fact: you can write import statements in your code, it doesn't have to be at the top
@@ -326,7 +327,54 @@ object CollectionsDemo {
 
     //case classes are by default immutable, so they are often used in FP style code
 
-    
+    case class Fruit(name: String, color: String) {
+      //can still add functionality and fields
+      def sing() = {
+        println("la la la")
+      }
+    }
+
+    //now we can use the case class:
+    println(Fruit("lemon", "yellow"))
+
+    val lime = Fruit("lime", "green")
+    //can access fields but cannot change them
+    //lime.color = "red"
+
+    lime.sing()
+
+    case class Todo(task: String, priority: Int) {}
+
+    val myTodos = List(Todo("wash dishes", 7), Todo("water plants", 5))
+
+    println(lime.copy(color = "red"))
+
+    println(myTodos)
+
+    // What exactly does a case class get you?
+    // - fields default to val, case classes are by default immutable, but you can access their fields
+    // you just can't change them
+    // - equals and hashcode methods are generated based on the fields.  This means equality between case
+    // classes will check their fields' equality, and you put them in Sets and Maps
+    // - a default toString method is generated
+    // - a copy() method is generated that will let us make modified copies of instances of the case class
+    // - apply and unapply methods are generated
+    // unapply lets your use the case class in match expressions, we'll see this later
+    // apply is a special method in Scala that is used whenever you just use the name of the class
+    // as if it were a function.  We haven't called out apply when we've seen it, but we've seen it frequently
+
+    //examples of apply:
+    //creating a new List:
+    List(1,2,3,4,5)
+
+    //accessing by index
+    doubles(1)
+
+    //accessing by key in a map
+    states("AK")
+
+    //creating new instances of our case class
+    Todo("explain apply method", 9)
 
   }
 }

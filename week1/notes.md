@@ -196,5 +196,18 @@ Each method called goes on the stack as a *stack frame*.  Whatever method is cur
 
 The stack frame associated with each method call stores primitive values and references to the Heap (object references discussed above)
 
+### Threads
 
+A thread is a single flow of program execution.  Thus far, we've only been dealing (explicitly) with a single thread.  That thread is the main thread that starts at the top of our main method and flows through our entire application.
+
+Our computer is not limited to doing one thing at a time.  Your processor might be able to simultaneously work on 4, 8, 16, ... tasks at the same time.  Our programs can be responsible for more than one of those tasks at the same time, as well.
+
+We can have many threads in our applications (many flows of program execution), and more than one of those threads can be executing at any given time.  We're not limited to having a number of threads <= cores in our processor, our Scala applications can have 1000s of threads, but not all of those threads can run at the exact same time.
+
+Running multiple Threads in an application can have many benefits:
+- if you're running multiple threads at the same time, you have effectively multiplied your processing power.  If we 8 threads on a problem instead of 1, it will complete in roughly 1/8 the time (depends on overhead and specifics of the problem).
+- We can use threads to wait and listen for events to occur and take action in response.  If you want to process some twitter data as soon as it becomes available, you'd need to have a Thread listening for that Twitter data to become available, at which point that Thread could trigger (multithreaded) processing
+- A fancier version of our pj0 would have multiple threads so we could have one thread interacting with the user and one or more threads working on DB access + file reading behind the scenes.  If the main thread is doing both then delays reading files will impact the user's experience.
+
+Running multiple Threads (and, for us in the future, running tasks on multiple machines across a cluster) also involves a lot of challenges.  You have to write code that doesn't break if certain parts of it execute in an unexpected order.  FP style is very nice for this.
 

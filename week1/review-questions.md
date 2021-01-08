@@ -46,7 +46,6 @@
 - How can we write Lambdas in Scala?
 - What does map do?
 - What does filter do?
-- What does reduce do?
 - What does it mean that a function returns Unit in Scala?
 
 
@@ -91,3 +90,4 @@ Check out the basics for the following questions, but we didn't quite get here:
 - How can we do something with the result of a Future?
 - How does a Future return a value or exception?
 - How does the onComplete callback function work?
+- What does reduce do?
