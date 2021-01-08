@@ -4,6 +4,7 @@ package example
 // Here we use the *fully qualified class name* to import ClassDemo
 // The fully qualified name is just the name of the package followed by the name of the class/object
 import example.classdemo.ClassDemo
+import scala.collection.View.Collect
 
 /**  Runner is a basic demo of Scala functionality
   *
@@ -18,21 +19,23 @@ object Runner extends App {
     "Everything we write inside of our Runner that extends App is just going to run"
   )
 
-  ClassDemo.myMethod()
+  CollectionsDemo.run()
+
+  //ClassDemo.myMethod()
 
   // This line creates an instance of our ClassDemo class
   // the new keyword is used to create new objects
-  var myInstance = new ClassDemo()
-  myInstance =
-    new ClassDemo() //create a second ClassDemo instance and assign it to myInstance
+  // var myInstance = new ClassDemo()
+  // myInstance =
+  //   new ClassDemo() //create a second ClassDemo instance and assign it to myInstance
 
-  myInstance.myInstanceMethod()
+  //myInstance.myInstanceMethod()
 
-  ClassDemo.runExamples()
+  //ClassDemo.runExamples()
 
-  runOperators()
+  //runOperators()
 
-  stackExceptionsProgramFlow()
+  //stackExceptionsProgramFlow()
 
   //introDemo()
 
