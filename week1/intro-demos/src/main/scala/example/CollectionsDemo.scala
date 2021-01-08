@@ -3,6 +3,8 @@ package example
 import scala.collection.mutable.ArrayBuffer
 import example.classdemo.ClassDemo
 import scala.collection.mutable.Map
+import scala.collection.mutable.Set
+import scala.io.Source
 
 object CollectionsDemo {
   //Scala fun fact: you can write import statements in your code, it doesn't have to be at the top
@@ -152,6 +154,7 @@ object CollectionsDemo {
     println(states)
 
     // loop over the key values pairs using a foreach:
+    // the key value pairs that we get for a foreach here are tuple2s
     states.foreach({ case (key, value) => println(s"$key : $value") })
 
     // Your Map provides constant time lookup based on key.  Regardless of how big your Map is,
@@ -162,10 +165,145 @@ object CollectionsDemo {
     // The reason for this is that your Map uses a hash table under the hood.  If you don't know what that
     // is, its really interesting but not necessary at the moment.
 
+    // we can also have an immutable, by importing it from scala.collection.immutable
+    // we can use both in the same file by using the fully qualified class name:
+    val imMap = scala.collection.immutable.Map(
+      "yellow" -> 6,
+      "red" -> 3,
+      "green" -> 5,
+      "purple" -> 6
+    )
+
+    //this fails:
+    //imMap("yellow") = 20
+
+    //can get just the values
+    println(imMap.values)
+
+    // A Set is a collection without duplicate elements.  We can iterate over it, but it is
+    // not indexed.  We shouldn't assume that a Set has a fixed order.  Some varieties of Set do,
+    // and others do not.
+
+    //Sets can be both immutable or mutable, similar to Maps.  Also similar to Maps, checking whether
+    // a value is contained within a Set is *very* fast
+
+    val shorts = Set[Short](3,5,7,9)
+
+    shorts += 11
+    shorts += 13 // the order changes when we add a 13 to the Set
+
+    //these lines won't change the Set, since it cannot contain duplicates:
+
+    shorts ++= List(1,3,5,7)
+    shorts += 13
+
+    //The default implementation of Set is a HashSet, which has no guaranteed order.
+    // A HashSet uses a Hash Table under the hood, similar to a Map.  In general, we can think
+    // of a Set as Map without any values.  On this note, Sets can only contain objects that have
+    // a hashcode() implementation!
+
+    println(shorts)
+
+    shorts.add(10)
+    shorts.remove(5)
+
+    println(shorts)
+
+    // We can also use SortedSet
+
+    // A Scala type that will often appear and we should be familiar with is Option.  It's not a collection,
+    // but it is kind of a container for another value.  Option represents some value that may or may
+    // not exist.  The use of Option is very common in functional code, and it's nice because it sometimes
+    // lets us avoid try-catch exception handling.
+
+    // we can get Options from Maps:
+    println(states.get("AK"))
+    println(states.get("MA"))
+    println(states.get("VA"))
+
+    // An Option containing a value is represented with Some(value), an Option not containing a value
+    // will be represented by None
+
+    // we can use match statements very effectively with Options:
+    states.get("VA") match {
+      case Some(state) => println(state)
+      case None => println("not found in Map")
+    }
+
+    val abbrevs = List("AK", "KY", "VA", "MA", "CA")
+
+    //map is a higher order function that takes a function that is used to tranform every element in
+    // a data structure.  map always returns a new copy, it never edits the original
+
+    //abbrevs.map((abbrev) => abbrev.last).foreach(println)
+    //underscore shortcut:
+    //abbrevs.map(_.last).foreach(println)
+
+    abbrevs.map(states.get(_)).foreach(println)
+
+    //above, map is returning a List[Option[String]].  Whenever we have nested data structures
+    // like this, we can call .flatten to reduce them to a single level, in this case
+    // to get a List[String]
+
+    println(abbrevs.map(states.get(_)).flatten)
+
+    //we can also use flatMap, which is just map followed by flatten.  This method is very useful
+    // for when you have a chain of tranformations (map calls) that all produce Options
+
+    println(abbrevs.flatMap(states.get(_)))
+
+    // Option is like a container for a value that may or may not exist
+    // values that exist are Some(value)
+    // values that dont exist are None
+    // we can flatMap to work with transformations that produce Options
+
+    // map, filter, reduce:
+    // map filter and reduce are all higher order functions.  Lets save the reduce for later.
+    // These functions can be found in many programming languages, each of them takes a function as an
+    // argument that operates on some data structure (often a List in Scala). map and filter both
+    // return a new List.  None of map, filter, or reduce modify the existing List.
+
+    // map is used to transform the elements in a data structure.  The output of map will be a new
+    // List with the same number of elements as the original list, but the value/type of elements
+    // in the new List may be different
+
+    // filter is used to filter the elements in a data structure.  The output of filter will be
+    // a new List with either the same or a smaller number of elements as the original list.  None
+    // of the values/types will be different.
+
+    // foreach is somewhat similar, but it doesn't return anything.  Instead, foreach just calls
+    // a function on each element in your data structure
+
+    //multiply each element in the List by 2
+    List(1,2,3,4,5).map(_*2).foreach(println)
+
+    //add 3 to each element
+    List(1,2,3,4,5).map(_+3).foreach(println)
+
+    //move to the REPL to try it out! We can chain these methods
+
+    //multiply each element in the list by 7, then filter out all the odd elements
+    // then convert them all to strings, then transform them into tuples containing
+    // (String, Int), with the number as a string and its length
+
+    // scala> l.map(_*7)
+    // res4: List[Int] = List(7, 14, 21, 28, 35, 42, 49, 56, 63)
+
+    // scala> l.map(_*7).filter(_%2 == 0)
+    // res5: List[Int] = List(14, 28, 42, 56)
+
+    // scala> l.map(_*7).filter(_%2 == 0).map(_.toString)
+    // res6: List[String] = List(14, 28, 42, 56)
+
+    // scala> l.map(_*7).filter(_%2 == 0).map(_.toString).map((num)=>{(num, num.length)})
+    // res7: List[(String, Int)] = List((14,2), (28,2), (42,2), (56,2))
+
     //tuples: a tuple is an ordered series of values of various types, up to 22!
     // Use tuples when you don't want to create a class or a case class for some
     // grouped properties
     val myTuple: (Int, String, List[Int]) = (3, "hello", List[Int](3, 4))
+
+    val myInferredTuple = (4.5, 55, "hi", 5.6)
 
     //We can have collections of tuples, this can be an easy and flexible way to
     // store structured data:
@@ -177,5 +315,18 @@ object CollectionsDemo {
     println(myTuple._2)
 
     val myWeirdTuple: (ClassDemo, String, String, Float) = null
+
+    //case classes provide more structure and information than tuples, but are easier
+    // to quickly create and use than regular classes.
+    
+    //A case class doesn't provide any totally new functionality over regular classes,
+    // it just provides automatically generated methods  + defaults that we would
+    // have to write ourselves in a regular class.  Everything that a case class does
+    // can be done with a regular class.  "syntactic sugar"
+
+    //case classes are by default immutable, so they are often used in FP style code
+
+    
+
   }
 }
