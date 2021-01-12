@@ -11,7 +11,6 @@
 - What is sbt (high level)?
 - How does Scala relate to the JRE and JVM?
 
-
 - Is Scala statically or dynamically typed?
 - Do we need to declare type for our variables in Scala? always?
 - What are integer types in Scala?
@@ -35,7 +34,6 @@
 - What is a REPL?
 - How does the Scala REPL store the results of evaluated expressions?
 
-
 - What is a higher order function?
 - What is function composition?
 - Why might we want to write an application using pure functions instead of impure functions?
@@ -47,7 +45,6 @@
 - What does map do?
 - What does filter do?
 - What does it mean that a function returns Unit in Scala?
-
 
 - What is the Stack? What is stored on the Stack?
 - What is the Heap? What is stored on the Heap?
