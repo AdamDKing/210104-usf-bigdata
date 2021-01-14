@@ -7,13 +7,21 @@ import com.revature.bookapp.model.Book
 import com.revature.bookapp.model.Track
 import scala.util.Using
 import java.sql.Connection
+import com.revature.bookapp.daos.BookDao
+import com.revature.bookapp.cli.Cli
 
 
 object Driver {
   def main(args: Array[String]): Unit = {
-    runDemo()
+    val cli = new Cli();
+    cli.menu()
   }
 
+
+
+  /**
+    * The intro demo to jdbc code.  None of this belongs in the Driver, but it was our intro
+    */
   def runDemo() = {
 
     var conn : Connection = null;
