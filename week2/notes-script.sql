@@ -248,6 +248,174 @@ update artist set name = 'Aquaman Three' where name = 'Aquaman Two';
 -- we can force an update with:
 refresh materialized view itunes_mat;
 
+-- if we do a little DML and update:
+update artist set name = 'Aquaman Three' where name = 'Aquaman Two';
+-- those results will *not* show up in the materialized view, since it saves the resultset
+-- and doesn't repeatedly hit the underlying tables.
+
+-- we can force an update with:
+refresh materialized view itunes_mat;
+
+-- a bit of DML (Data Manipulation Language) practice
+-- DML keywords: INSERT UPDATE DELETE
+-- DML operates on records contained within a table.
+
+
+select * from genre;
+
+insert into genre values 
+(default, 'Shoegaze');
+
+-- we can specify columns to add when we're inserting new data
+-- the columns we dont provide values for must have default values or be nullable
+insert into genre(name) values ('Trance');
+
+-- example with no default and not null
+create table widget (
+  widget_id SERIAL primary key,
+  color VARCHAR(20) default 'green',
+  shape VARCHAR(20) not null
+);
+
+insert into widget(shape) values ('circle'), ('cube');
+
+insert into widget(color, shape) values ('red', 'square'), ('purple', 'cylinder');
+
+select * from widget;
+
+drop table widget;
+
+-- update and delete should always be used with a WHERE clause
+-- otherwise they will update/delete every record in the table
+
+update widget set shape = 'triangle'; --dangerous, updates every record
+
+update genre set name = 'Electronica' where name = 'Shoegaze';
+
+-- delete all the electronica records from genre using LIKE
+--delete from genre where name like 'Elec%';
+
+-- The existing Electronica/Dance genre causes an error to be thrown when we try to delete it:
+--  update or delete on table "genre" violates foreign key constraint "fk_track_genre_id" on table "track"
+--  Detail: Key (genre_id)=(15) is still referenced from table "track".
+-- referential integrity!
+
+-- take 2: delete all the shapes starting with t from widget:
+delete from widget where shape like 't%';
+
+-- can also use OR
+delete from widget where shape = 'square' or shape = 'cylinder';
+
+select * from widget;
+
+-- DML Exercises :
+-- 1. insert two new records into the employees table
+select * from employee;
+insert into employee(first_name, last_name) values
+('Adam', 'King'),
+('Jeff', 'Goldblum');
+-- 2. insert two new records into the tracks table
+select * from track;
+insert into track(name, media_type_id, milliseconds, unit_price) values 
+('Fly me to the moon', 1, 500, 0.99),
+('Nothing matters when we''re dancing', 2, 600, 0.99);
+select * from track order by track_id desc;
+-- 3. update customer Aaron Mitchell's name to Robert Walter
+update customer set first_name = 'Robert', last_name = 'Walter' where first_name = 'Aaron' and last_name = 'Mitchell';
+select * from customer;
+-- 4. delete one of the employees you inserted
+delete from employee where last_name = 'King';
+-- 5. delete customer Robert Walter.  You'll also need to remove all 
+--  other rows in tables that depend on his existence to get past the error
+delete from customer where first_name = 'Robert' and last_name = 'Walter'; --error because invoices still reference him
+delete from invoice where customer_id = 32; --error because invoice lines still reference invoices
+
+select * from invoice where customer_id = 32;
+
+-- don't want to run one query per invoice, instead:
+-- get all of Robert Walter's invoice ids in a subquery, then delete associated invoice lines
+delete from invoice_line where invoice_id in (select invoice_id from invoice where customer_id = 32);
+
+
+-- let's take a look at some DDL, and create some tables
+-- DDL (Data Definition Language) keywords are CREATE ALTER DROP TRUNCATE
+-- TRUNCATE removes all the content from a table but does not delete the table
+
+-- for demo purposes, I think lets create the database for an application that stores notes on books
+-- we'll create a users table but maybe not flesh out that part of the application.
+
+-- lets create ourservles a books table
+create table book (
+  -- here we specify columns.  first column name, then datatype, then any constraints
+  -- almost always we start with an id that is SERIAL PRIMARY KEY
+  book_id SERIAL primary key, --primary key is a constraint that just specifies UNIQUE and NOT NULL.
+  title text not null, -- any length of text, not null
+  --isbn is 13 digits, never used as a number.  Lets make it a varchar and use regex to enforce
+  -- the default is nullable, but it's nice to specify:
+  isbn varchar(13) null check (isbn ~ '^[0-9]{13}'), -- isbn is only digits, exactly 13 characters
+  author text
+  --we can come back and add more details.  We'll need to edit author  
+);
+
+--varchar vs char: char is fixed length, will pad with spaces.  varchar is variable length up to a limit of characters.
+
+-- create an appuser table
+create table appuser (
+  appuser_id SERIAL primary key,
+  username text unique not null,
+  pass text,
+  email text
+);
+
+-- create a notes table, to store notes on books.  We add 2 foreign keys to make our associations work
+create table note (
+  note_id serial primary key,
+  content text,
+  appuser_id INTEGER not null references appuser(appuser_id), -- foreign key to appuser table
+  book_id INTEGER not null references book(book_id) -- foreign key to book table
+);
+
+-- the general idea:
+insert into appuser(username) values ('aking');
+
+insert into book(title, author) values ('The Two Towers', 'J.R.R. Tolkien');
+
+insert into note(content, appuser_id, book_id) values ('A nice book', 1, 1);
+
+-- none of these things are associated together just yet.  
+
+select * from book;
+select * from appuser;
+select * from note;
+
+drop table book;
+drop table appuser;
+drop table note;
+
+-- we associate them using foreign key relationships.  There are two different ways we can add foreign
+-- key relationships: when we create the table, or after creating the table with ALTER.
+
+-- Every user has their own notes on each book, if they want.  users and books are directly associated.
+-- I'm inclined to let users make multiple notes on the same book, though that's not necessary.
+-- Each book can have many notes, but each note is only associated with a single book.  This is a many-to-one
+-- or n-to-1 relationship (the concept here is multiplicity), because we have many notes for a single book.
+-- Each user can have many notes, but each note is only associated with a single user.  This is also many-to-one
+
+-- users and books are associated with each other *through* the note table.  Each user can have notes on many books
+-- and each book can have notes written on it by many users.  Users and books have a many-to-many relationship
+-- this is the same relationship embodied in chinook with invoices <-> tracks via invoice_lines
+-- all many-to-many relationships are represented with 3 tables, with 1 table containing the association between the other 2.
+
+-- there is also 1-to-1 multiplicity.  1 to 1 relationships could be condensed into a single table, but are separate tables
+-- for some organizational purpose.  persons and birth certificates are 1-to-1
+
+-- the foreign key needs to go on the many side of many to one relationships.  Since there are meny notes per book,
+-- we put the foreign key column on note.
+
+-- we can use inner joins on foreign key relationships to put our data back together
+select * from appuser
+	inner join note on appuser.appuser_id = note.appuser_id
+	inner join book on note.book_id = book.book_id;
 
 
 
