@@ -2,6 +2,8 @@ package com.revature.bookapp.cli
 
 import scala.io.StdIn
 import scala.util.matching.Regex
+import com.revature.bookapp.daos.BookDao
+import com.revature.bookapp.model.Book
 
 /** A CLI that allows the user to interact with our application
   *
@@ -33,6 +35,9 @@ class Cli {
     */
   def printOptions(): Unit = {
     println("Commands available:")
+    println("list books : lists all books stored in Bookapp")
+    println("find [title] : lists all books with a given title")
+    println("add book : adds a new book to the database")
     println("exit : exits Bookapp CLI")
   }
 
@@ -51,6 +56,18 @@ class Cli {
         case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("exit") => {
           continueMenuLoop = false
         }
+        case commandArgPattern(cmd, arg)
+            if cmd
+              .equalsIgnoreCase("list") && arg.equalsIgnoreCase("books") => {
+          printAllBooks()
+        }
+        case commandArgPattern(cmd, arg) if cmd.equalsIgnoreCase("find") => {
+          printBooks(arg)
+        }
+        case commandArgPattern(cmd, arg)
+            if cmd.equalsIgnoreCase("add") && arg.equalsIgnoreCase("book") => {
+              runAddBookSubMenu()
+            }
         case commandArgPattern(cmd, arg) => {
           println(s"""Failed to parse command: "$cmd" with arguments: "$arg"""")
         }
@@ -62,5 +79,31 @@ class Cli {
     println("Thank you for using Bookapp CLI, goodbye!")
   }
 
+  def printAllBooks(): Unit = {
+    BookDao.getAll().foreach(println)
+  }
+
+  def printBooks(title: String): Unit = {
+    BookDao.get(title).foreach(println)
+  }
   
+  /**
+    * runs an add book sub menu, we're skipping some QoL features present on the main menu
+    */
+  def runAddBookSubMenu(): Unit = {
+    println("title?")
+    val titleInput = StdIn.readLine()
+    println("ISBN?")
+    val isbnInput = StdIn.readLine()
+    try {
+      if (BookDao.saveNew(Book(0, titleInput, isbnInput))) {
+        println("added new book!")
+      } 
+    } catch {
+      case e : Exception => {
+        println("failed to add book.")
+      }
+    }
+  }
+
 }
