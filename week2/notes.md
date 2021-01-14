@@ -152,4 +152,27 @@ Example: I want to allow users to retrieve widgets by name:
 - "SELECT * FROM widgets WHERE name = '';DROP TABLE widgets;SELECT 'sql injection >:)';"
 
 
+### Normalization
+
+Why do we normalize data? to avoid 3 "anomalies":
+- update anomaly : we update some data in one part of our database but not everywhere
+- creation anomaly : we are unable to create data of one type without also creating data of another type
+- deletion anomaly : we are unable to delete data of one type without also deleting data of another type
+
+One short way of describing the motivation for normalization is that our goal is to represent each
+piece of data *exactly once*.  So, the title of each book should show up exactly once, the name of each
+author should show up exactly once, the username for an account should show up exactly once...
+
+We've left our book, appuser, note tables not quite normalized, so we can see examples there.  How many times does Stephen King appear in our database? (3 times, associated with 3 of his books: Carrie, The Stand, The Dark Tower ).  This means every time we update the name of Stephen King, we have to update it in all 3 places (this is more expensive and opens us up to update anomalies).  Also, what happens if we delete the books The Dark Tower, Carrie, and The Stand from our database? We delete Stephen King from our DB as well (deletion anomaly).  Finally, suppose we want to add another author to our DB: Margaret Atwood.  We're unable to just add Margaret Atwood, instead we need to add one of her books alongside her (creation anomaly).
+
+Normalization is defined in multiple, cumulative "normal forms".  We're going to discuss up to 3rd Normal Form, which is what we should aim for in pj0.  Normalization is a little mathy and has some definitions involved:
+- Candidate Key : any minimal column or set of columns that uniquely identifies every record in the table
+- Primary Key : the candidate key that we choose to use to actually uniquely identify every record in the table
+  - Most of the time, we create a SERIAL id field and use it as our primary key.
+  - the primary key constraint in postgres just marks a field as unique and not null.
+- Composite Key : candidate key consisting of more than 1 column.  Good to know, rarely used as primary key.
+- Foreign Key : a foreign key is a reference to a primary key, used to link records together across tables with joins.  Normalization tends to split your data across many tables.  Foreign keys are useful to put it back together when necessary.
+
+
+
 
