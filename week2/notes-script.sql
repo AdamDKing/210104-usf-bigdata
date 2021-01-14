@@ -418,6 +418,33 @@ select * from appuser
 	inner join book on note.book_id = book.book_id;
 
 
+-- setting up some decent fake data can be very helpful when developing, I highly recommend it
+insert into book(title, author, isbn) values
+('The Return of the King', 'J.R.R. Tolkien', '3398569299873'),
+('Carrie', 'Stephen King', '3394859299873'),
+('The Stand', 'Stephen King', '7576459299873'),
+('The Dark Tower', 'Stephen King', '7576459699973');
+
+insert into appuser(username) values
+('bking'),
+('jgoldblum');
+
+insert into note(content, appuser_id, book_id) values
+('A pleasant book', 1, 4),
+('A bad book', 2, 3),
+('A decent book', 1, 4),
+('A fancy book', 3, 4),
+('An unpleasant book', 1, 3),
+('A blue book', 2, 1),
+('A fun book', 3, 1),
+('An interesting book', 3, 5),
+('Another pleasant book', 1, 2);
+insert into note(content, appuser_id, book_id) values
+('Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum', 1, 5);
+
+
+
+
 
 
 
