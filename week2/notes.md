@@ -167,11 +167,79 @@ We've left our book, appuser, note tables not quite normalized, so we can see ex
 
 Normalization is defined in multiple, cumulative "normal forms".  We're going to discuss up to 3rd Normal Form, which is what we should aim for in pj0.  Normalization is a little mathy and has some definitions involved:
 - Candidate Key : any minimal column or set of columns that uniquely identifies every record in the table
+  - The really technical way to talk about this is functional dependency.  Every record should be functionally dependent on the candidate key.  That just means, if we know the candidate key, we know the rest of the record.  Everything is functionally dependent on the id.  Some other examples: country is functionally dependent on state.  If we a record has the value "Virginia" for its State, then we know it has the value "USA" for its Country.
 - Primary Key : the candidate key that we choose to use to actually uniquely identify every record in the table
   - Most of the time, we create a SERIAL id field and use it as our primary key.
   - the primary key constraint in postgres just marks a field as unique and not null.
 - Composite Key : candidate key consisting of more than 1 column.  Good to know, rarely used as primary key.
 - Foreign Key : a foreign key is a reference to a primary key, used to link records together across tables with joins.  Normalization tends to split your data across many tables.  Foreign keys are useful to put it back together when necessary.
+
+Let's start with 1st Normal Form : "the key"
+- Every record in the relation must be unique (another way to say it: there must be a primary key)
+- Every data value must be atomic, so we can't have columns that are lists
+Then we have 2nd Normal Form : "the whole key"
+- 2nd Normal Form is only really relevant if we have composite keys (candidate keys with >1 column)
+- If there are no composite keys, every relation in 1NF is also in 2NF
+- Any column or set of columns that depends on a composite key must depend on the entirety of that
+  composite key, not just a part
+- we also say "no partial dependencies"
+Then, we have 3rd Normal Form : "nothing but the key"
+- All columns depend only on candidate keys.  No non-candidate-key columns depend on each other.
+- no dependencies except dependencies on keys
+
+There are normal forms past 3NF.  Also see https://en.wikipedia.org/wiki/Database_normalization#Example_of_a_step_by_step_normalization
+
+### Transactions
+
+Every interaction we have with the database takes place as part of a database transaction.  All of these are transactions are stored in the DB log before they are carried out.
+
+Transaction in RDBMSs are controlled using TCL (Transaction Control Language), but we always are using transactions even if we don't control them with TCL.  The TCL keywords are BEGIN to start a transaction, COMMIT to end a transaction, and SAVEPOINT and ROLLBACK for fine-grained control of transaction checkpointing and reverting.
+
+The default transaction behaviour in Postgres is to make every statement a transaction.
+
+Why does this matter? Transactions in an RDBMS have ACID properties:
+- Atomic : Your transaction is a single unit.  It either entirely succeeds or entirely fails.  If we're transferring money between bank accounts, we want the entire tranfer to succeed or the entire transfer to fail, we don't want to have half-transfers occur (money mysteriously appearing or disappearing)
+- Consistent : Transactions take your database from one valid state to another.  Constraints are checked in each transaction to ensure the database remains valid.
+- Isolated : Transactions occurring simultaneously don't interfere with each other (to some extent).  Isolation on RDBMSs is specified with "isolation levels".  This lets us adjust the classic multithreading speed / safety tradeoff:
+  - READ UNCOMMITTED : transactions can read data modified inside another transaction.  These changes may later be rolled back, which can cause problems.  Reading data from an ongoing transaction is called a "dirty read".  Maximum speed, essentially no safety.
+  - READ COMMITTED : transactions can read data modified by another transaction once that transaction is complete.  These changes won't be rolled back, but values may change in the middle of a transaction.  Called a "nonrepeatable read".
+  - REPEATABLE READ : transactions will not read data modified by another transaction while in progress, BUT they can read new data inserted by another transaction.  This is called a "phantom read".  Repeatable read is kind of a strange isolation level, but it makes sense for some use cases.
+  - SERIALIZABLE : transactions will takes place as if they took place in serial, meaning one after the other with no interference.  Maximum safety, substantial loss in speed in some cases.
+  - Under the hood, all of this is achieved by locking relevant records/tables while transactions are ongoing.
+- Durable : ACID properties and data are preserved even when a catastrophe occurs.  If your postgresql server loses power mid-transaction, it will ensure ACID properties when it reboots.  This is enabled by the transaction log.
+
+There is an alternative NoSQL-ish acronym that's even more contrived, BASE:
+BASE focuses more on availabilty and speed in data store across a cluster, in comparison to ACID's focus on safety.
+- Basically Available : database operations remain available in the case of failures, though those operations may be overwritten or reverted later.
+- Soft State : across the machines in the data store, data may not be consistent, instead different machines may have different data that must be later reconciled.
+- Eventual Consistency : Given enough time without new operations, data stored across machines in the cluster will become consistent
+
+We care more about ACID than BASE, and understanding the important things about BASE we get from the CAP Theorem:
+CAP : Consistency, Availability, and Partition Tolerance:
+- Consistency: This consistency is *not* the consistency in ACID, instead it is having consistent data across machines in a cluster.  If all the machines in the cluster agree on the value for some piece of data, our data is consistent.
+  - technical: every read receives the most recent write or an error
+- Availability: basic operations are available, users can read/write/CRUD.
+  - technical: every request receives a non-error response, without guaranteeing it is the most recent write
+- Partition Tolerance: The system continues to operate despite network failure.  It tolerates network partitions (breaking apart the network).
+  - Ultimately, we *must* guarantee partition tolerance, because network failures are a fact of life.
+
+The CAP Theorem applies to data stores (including RDBMSs) that run on a cluster.
+
+The CAP Theorem says that we can only guarantee 2 out of the 3.  In practice, this means that we must choose to guarantee Partition Tolerance and one of either Consistency or Availability.
+If we choose Availability, then our disconnected machines will attempt to fulfill basic requests even if that might lead to inconsistent state across the (temporarily disconnected) cluster.
+If we choose Consistency, then our disconnected machines may return errors instead of fulfilling basic requests, in order to ensure they remain consistent across the (temporarily disconnected) cluster.
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

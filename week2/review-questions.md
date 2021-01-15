@@ -19,6 +19,8 @@
 - What is the difference between an aggregate function and a scalar function?
 - What are examples of aggregate and scalar functions?
 - What are the different joins in SQL?
+  - > We have INNER, OUTER LEFT, OUTER RIGHT, and OUTER FULL joins.  INNER joins only include records with a match in the output (so records where the join condition is true).  OUTER joins includes records with a match *and* all unmatched records from the left, right, or both tables.
+  - > The part of the JOIN ```ON album.artist_id = artist.artist_id``` is the join condition.  WHen the join condition is true for a pair of records, those records are matched together in the output.  90+% of the time, the join condition will be equality based on a foreign key relationship, but you can have various strange join conditions.  A join condition of just TRUE will include all pairs of records in the output and is called a CROSS JOIN.
 - What are the different set operations in SQL? Which set operations support duplicates?
   - > UNION, INTERSECT, UNION ALL are good to know.  UNION combines two resultsets removing duplicates, INTERSECT produces results that appear in both of two result sets, and UNION ALL combines two resultsets including duplicates.
 - What is the difference between joins and set operations?
@@ -43,18 +45,21 @@
 - What advantages does creating an Index give us? Disadvantages?
 - What is CRUD?
 
-- What is a database in Mongo?
-- What is a collection?
-- What is a document?
-- What rules does Mongo enforce about the structure of documents inside a collection?
-- What is JSON? BSON?
-
-- What is a distributed application?  A distributed data store?
-- What is High Availability? How is it achieved in Mongo?
-- What is Scalability? How is it achieved in Mongo?
-- Explain replica sets and sharding
 - What is the CAP Theorem?
 - What does CAP mean for our distributed data stores when they have network problems?
 - What does it mean that an operation or transaction on a data store is atomic?
 - What does ACID stand for?
 - What does BASE stand for?
+
+
+We didn't get to the following, so look into them if you like but they wont be on assessments:
+- What is a database in Mongo?
+- What is a collection?
+- What is a document? 
+- What rules does Mongo enforce about the structure of documents inside a collection?
+- What is JSON? BSON?
+- What is a distributed application?  A distributed data store?
+- What is High Availability? How is it achieved in Mongo?
+- What is Scalability? How is it achieved in Mongo?
+- Explain replica sets and sharding
+
