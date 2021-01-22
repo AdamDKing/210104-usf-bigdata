@@ -41,6 +41,7 @@
 - How does a Standby NameNode make the NameNode fault tolerant?
 - What purpose does a Secondary NameNode serve?
 - How might we scale a HDFS cluster past a few thousand machines?
+  > HDFS Federations, with multiple NameNodes, can be used if you need 10000s of machines.
 - In a typical Hadoop cluster, what's the relationship between HDFS data nodes and YARN node managers?
 
 - When does the combine phase run, and where does each combine task run?

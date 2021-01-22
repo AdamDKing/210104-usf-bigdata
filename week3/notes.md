@@ -79,3 +79,44 @@ Bonus NameNode details:
 - Name Node records edits to the filesystem in a log called EditLog, also stored on local disk.
 
 ### YARN Daemons
+Two main YARN Daemons:
+- Resource Manager : one resource manager per cluster, the RM is the master daemon.  Responsible for providing computing resources for jobs.  Computing resources here are things like RAM, cores, disk.  Allocates the computing resources necessary to do tasks like MapReduce.
+- Node Manager : one per machine, the worker daemon.  Node managers manage bundles of resources called *containers* running on their machine and report the status back to the RM.
+
+Computations occuring on the cluster can be described as *jobs* composed of *tasks*.  A job is something like an entire MapReduce.  We submit jobs to the Resource Manager (more specific later).  Tasks are the individual pieces Jobs are broken up into.  If we submit a MapReduce job to the cluster, that job may spawn 100s to 1000s of map and reduce tasks.  Tasks are what run inside of containers. 
+
+If we submit a MapReduce job with 300 map tasks and 4 reduce tasks, we submit that job to the RM, and the RM makes those tasks actually run in 304+ containers across the cluster, and tracks progress based on the information it receives from the Node Managers.
+
+We need a more detailed picture here, the Resource Manager is composed of a few pieces:
+- Scheduler : this is responsible for allocating resources (containers) across the cluster based on requests.  It doesn't know much about the source of those requests or the overarching jobs occuring, it just allocates computing resources.
+- ApplicationsManager : Accepts job submissions, and creates the ApplicationMaster for each submitted job.  Also responsible for the fault tolerance of ApplicationMasters.  ApplicationMasters run in containers on the cluster, and are responsible for communicating with the scheduler to achieve their jobs.  This allows this ApplicationsManager to be ultimately responsible for job completion, while offloading most of the work to ApplicationMasters running on worker nodes.
+
+Scheduler : 1 per cluster (part of RM)
+ApplicationsManager : 1 per cluster (part of RM)
+ApplicationMaster : 1 per job (managed by ApplicationsManager)
+
+### Fault Tolerance
+
+Fault tolerance is just the ability of a system to continue functioning after faults have occurred -- after something has gone wrong.  Fault tolerance is very important in distributed systems, because there are always failures occurring.  We're going to discuss how Hadoop achieves fault tolerance, and we'll have similar discussions for future technologies as well.  One important piece to achieving fault tolerance is avoid Single Points of Failure (SPoF).  Any part of the system that breaks the whole system when it fails is a single point of failure and should be avoided/mitigated.  All systems fail, fail-safe systems fail when their fail-safe mechanism fails.
+
+A related concept is High Availability.  This just means maintaining availability of a system for as much uptime as possible.  It's a little fuzzy, we often talk about percentages of uptime in practice.
+
+### Fault Tolerance in HDFS
+
+- For DataNodes, their fault tolerance is handled by the NameNode.  DNs send heartbeats to the NN, so when a DN goes down, it stops sending those heartbeats, and the NN knows to make new replicas of all the data stored on the downed DN.  The NN makes copies up to the replication factor (default 3, we've set it to 1).
+- For NameNode, in Hadoop v1 it was a SPoF.  In Hadoop 2+ we have multiple options for fault tolerance:
+  - In the first case, the NN has its FSImage and EditLog, which it periodically checkpoints and write to disk.  This information stored on disk enables easy recovery if just the NN daemon crashes.
+  - We can have a Secondary NameNode.  This periodically (every hour) keeps backups of the NN metadata.  The Secondary NN isn't capable of stepping in or functioning as a replacement NameNode, it just provides functionality to preserve FS information in a secondary location in the case of total failure of the NN.  Avoid catastrophic data loss.
+  - We can have a Standby NameNode.  This is a daemon that runs on another machine and follows the same steps as the NameNode while they are occuring in real time.  The Standby NameNode doesn't receive outside traffic and doesn't make decisions about the filesystem, it just receives the information in the EditLog and keeps its own FSImage.  Then, if the real NameNode fails, the Standby NameNode steps in and becomes the new NameNode.  This is the best option, but requires more resources (must allocate resources for 2 NN instead of 1).  This behaviour, where a system fails and another system steps in to handle that failure, is called *failover*.
+
+### Fault Tolerance in YARN
+
+- For NodeManagers, their fault tolerance is handled by the ResourceManager.  NMs send heartbeats to the RM, the RM knows when a NM is down, and can re-run the lost tasks elsewhere.
+- For Tasks within a job that fail, their fault tolerance is handled by that Job's ApplicationMaster.  The single ApplicationMaster per job receives reports about the progress of tasks and can request new resources from the scheduler for tasks that fail.
+- For ApplicationMasters, their fault tolerance is handled by the ApplicationsManager.  If the container running an ApplicationMaster goes down (or the whole node), the ApplicationsManager will restart it, potentially on a different machine.
+- It is possible (with some config) to restart NodeManagers and allow the containers (ApplicationMasters / Tasks) to continue where they left off before the failure.  These two systems for fault tolerance work together.
+- For the ResourceManager, it was a SPoF before Hadoop 2.4.  You can now configure a standby ResourceManager, capable of stepping in in the case the active ResourceManager goes down.  This process is managed by Zookeeper, which we won't get to yet.
+
+### Gardner's 3 Vs, Unix permissions (octal), rack awareness and data locality
+
+Some topics to look into ^
