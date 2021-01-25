@@ -18,8 +18,9 @@
 - Close and restart your Ubuntu shell.
 
 #### Run HDFS commands necessary for Hive setup
-- start hdfs if not already running (you can check with ```jps```)
+- start hdfs + yarn if not already running (you can check with ```jps```)
 - ```startdfs``` (makes use of the alias above)
+- ```startyarn```
 - ```hadoop fs -mkdir /tmp```
 - ```hadoop fs -mkdir /user/hive```
 - ```hadoop fs -mkdir /user/hive/warehouse```
@@ -32,6 +33,7 @@
 - This should say 'schemaTool completed' at the end.  It will create a derby.log file and
 - a metastore_db directory in our ~.  If you ever need to destructive restart hive, delete those files and run this command again.
 - We can now connect on the command line using: ```beeline -u jdbc:hive2://```
+- Use Ctrl+D to exit beeline
 - The next steps are necessary to run hiveserver2 and connect from DBeaver.
 
 #### Change Hive config
@@ -50,35 +52,21 @@
 </property>
 </configuration>
 ```
-Now, let’s try to initialize Hive. It should say ‘schemaTool completed’ at the very end.
-schematool -dbType derby -initSchema
-Finally, let’s try running Beeline. This was the final step we got to, and we’ll add tables and perform SQL
-queries in Hive tomorrow.
-beeline -u jdbc:hive2://
-If you see the ‘0: jdbc:hive2://>’ prompt, you’re all set. You can press [Crtl+D] to exit beeline. Don’t
-forget to run stop-yarn.sh and stop-dfs.sh before quitting the Ubuntu shell, or they will still be running
-even if you quit the window.
-Final Notes
-Finally, you can delete the downloaded .tar.gz files to get some disk space back. These will be where you
-downloaded them, likely in your home directory.
-rm apache-hive-3.1.2-bin.tar.gz
-rm hadoop-3.2.1.tar.gz
-Some more files you might need are student-house.csv and the data for Project 1. They should be linked
-somewhere in the Discord under the notes-resources channel or in the Zoho Connect chat.
-Additional Notes from Danny
-These aliases and shorthand commands were noted by Danny, and seem very useful!
-Starting HDFS: $HADOOP_HOME/sbin/start-dfs.sh
-Starting Yarn: $HADOOP_HOME/sbin/start-yarn.sh
-Stoping HDFS: $HADOOP_HOME/sbin/stop-dfs.sh
-Stoping Yarn: $HADOOP_HOME/sbin/stop-yarn.sh
-These can be added to your .bashrc for aliases to the commands above.
-alias startdfs='$HADOOP_HOME/sbin/start-dfs.sh'
-alias startyarn='$HADOOP_HOME/sbin/start-yarn.sh'
-alias stopdfs='$HADOOP_HOME/sbin/stop-dfs.sh'
-alias stopyarn='$HADOOP_HOME/sbin/stop-yarn.sh'
-WSL seems to turn off sshd (ssh daemon) every time its restarted. It could be a time saver to add these two lines
-below to your .bashrc, but it will mean typing your password when you login because the command is using
-sudo.
-echo "Starting sshd..."
-sudo service ssh start  
+
+#### Run + use hiveserver2
+- start hiverserver2 with:
+- ```hiveserver2```
+- open a new ubuntu tab
+- connect to your running server from the command line (beeline):
+- ```beeline -u jdbc:hive2://localhost:10000```
+- Use Ctrl+D to exit beeline
+- run a create database command to make sure it's working:
+- ```CREATE DATABASE testdb;```
+- If this works, open DBeaver, and create a new Apache Hive connection
+- The default settings should let you connect.  Install the drivers when it prompts you
+
+#### Final notes
+- Hive runs using Hadoop, so you'll need to have HDFS + YARN running.
+- You'll also need to remember to start the ssh daemon (sshd) when you boot up Ubuntu after a restart
+- This install guide required some fiddling, and it's possible I missed a necessary step.  If you're sure you followed directions, reach out + let me know if you run into unexpected problems.  Especially if Hive is telling you that you're not allowed to impersonate another user!
 
