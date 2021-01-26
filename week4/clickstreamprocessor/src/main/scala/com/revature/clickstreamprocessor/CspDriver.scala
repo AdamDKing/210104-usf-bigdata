@@ -22,8 +22,8 @@ object CspDriver {
     FileInputFormat.setInputPaths(job, new Path(args(0)))
     FileOutputFormat.setOutputPath(job, new Path(args(1)))
 
-    job.setMapperClass(classOf[WordMapper])
-    job.setReducerClass(classOf[WordReducer])
+    job.setMapperClass(classOf[PrevLinkCountMapper])
+    job.setReducerClass(classOf[MaxPrevCountReducer])
 
     job.setOutputKeyClass(classOf[Text])
     job.setOutputValueClass(classOf[IntWritable])
