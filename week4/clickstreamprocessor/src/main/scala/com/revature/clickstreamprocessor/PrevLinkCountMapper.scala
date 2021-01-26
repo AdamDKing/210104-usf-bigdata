@@ -23,7 +23,7 @@ class PrevLinkCountMapper extends Mapper[LongWritable, Text, Text, Text] {
     if (record(2) == "link") {
       context.write(
         new Text(record(0)),
-        new Text(s"${record(1)}\\t${record(3)}")
+        new Text(s"${record(1)}\t${record(3)}")
       )
     }
   }

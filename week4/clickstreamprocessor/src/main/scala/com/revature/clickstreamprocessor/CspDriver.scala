@@ -28,6 +28,9 @@ object CspDriver {
     job.setOutputKeyClass(classOf[Text])
     job.setOutputValueClass(classOf[IntWritable])
 
+    job.setMapOutputKeyClass(classOf[Text])
+    job.setMapOutputValueClass(classOf[Text])
+
     val success = job.waitForCompletion(true)
     System.exit(if (success) 0 else 1)
   }
