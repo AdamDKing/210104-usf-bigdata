@@ -35,6 +35,11 @@ class WordMapper extends Mapper[LongWritable, Text, Text, IntWritable] {
     line.split("\\W+").filter(_.length > 0).map(_.toUpperCase()).foreach(
       (word:String) => {context.write(new Text(word), new IntWritable(1))}
     )
+    //0 hi from scala hadoop =>
+    //hi 1
+    //from 1
+    //scala 1
+    //hadoop 1
   }
 
 }
