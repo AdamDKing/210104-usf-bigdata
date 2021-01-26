@@ -5,6 +5,8 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.Text
+import org.apache.hadoop.io.IntWritable
 
 
 /**
@@ -41,7 +43,16 @@ object WcDriver {
     // below here we configure specific mappers and reducers, and we set the output key-value pair
     // types based on the specifics -- what our job does.
 
-    //TODO: return + finish config
+    //Specify mapper and reducer:
+    job.setMapperClass(classOf[WordMapper])
+    job.setReducerClass(classOf[WordReducer])
+
+    //specify output types, we're making use of some defaults to not specify more
+    job.setOutputKeyClass(classOf[Text])
+    job.setOutputValueClass(classOf[IntWritable])
+
+    val success = job.waitForCompletion(true) //submit configured job + wait for it to be done
+    System.exit(if (success) 0 else 1) //exit with 0 if successful
 
   }
 }

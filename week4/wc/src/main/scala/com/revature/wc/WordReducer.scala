@@ -29,6 +29,8 @@ class WordReducer extends Reducer[Text, IntWritable, Text, IntWritable] {
     values.forEach(count += _.get()) //get each value and add it to the count
 
     context.write(key, new IntWritable(count))
+    //hamlet (1,1,1,1,1) =>
+    //hamlet 5
   }
 
 }
