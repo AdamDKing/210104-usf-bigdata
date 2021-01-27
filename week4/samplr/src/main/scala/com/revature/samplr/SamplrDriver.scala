@@ -5,11 +5,11 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.fs.Path
-
+import org.apache.hadoop.io.Text
 
 object SamplrDriver {
-  def main(args : Array[String]): Unit = {
-    
+  def main(args: Array[String]): Unit = {
+
     if (args.length != 3) {
       println("Usage: samplrjar <fraction> <input> <output> ")
       System.exit(-1)
@@ -28,8 +28,13 @@ object SamplrDriver {
 
     FileInputFormat.setInputPaths(job, new Path(args(1)))
     FileOutputFormat.setOutputPath(job, new Path(args(2)))
-    //TODO: the rest of this!
+    job.setMapperClass(classOf[RandomSampleMapper])
 
+    job.setOutputKeyClass(classOf[Text])
+    job.setOutputValueClass(classOf[Text])
+
+    val success = job.waitForCompletion(true)
+    System.exit(if (success) 0 else 1)
 
   }
 }
