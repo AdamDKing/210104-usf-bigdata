@@ -14,6 +14,8 @@ class RandomSampleMapper
       value: Text,
       context: Mapper[LongWritable, Text, Text, Text]#Context
   ): Unit = {
+    //get the configuration from the context, and get the fraction of lines to keep from the config
+    frac = context.getConfiguration().getDouble("frac", 0.5)
     // pseudorandom decide if the record will be included
     if(Math.random() < frac) {
       //write the line of text out as the key, leaving the value as empty string
