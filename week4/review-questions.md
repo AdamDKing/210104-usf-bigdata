@@ -38,7 +38,7 @@
 - Why does Spark need special tools for shared variables, instead of just declaring, for instance, var counter=0?
 - What is a broadcast variable?
 - What is an accumulator?
-- How would the Logistic Regession example function differently if we left off the call to .cache() on the points parsed from file?
+- How would the Logistic Regression example function differently if we left off the call to .cache() on the points parsed from file?
 
 - Be comfortable enough with the following terms to recognize them:
 - RDD
