@@ -28,6 +28,7 @@ object SamplrDriver {
 
     FileInputFormat.setInputPaths(job, new Path(args(1)))
     FileOutputFormat.setOutputPath(job, new Path(args(2)))
+    //TODO: the rest of this!
 
 
   }
