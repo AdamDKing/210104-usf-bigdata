@@ -216,8 +216,70 @@ SELECT ssn, first_name, last_name, age, state, house FROM student;
 
 SELECT * FROM student_house;
 
+-- enforce bucketing
+SET hive.enforce.bucketing = true;
 
+-- students bucketed by age:
+CREATE TABLE student_age_buckets (
+	ssn STRING,
+	first_name STRING,
+	last_name STRING,
+	age INT,
+	state STRING,
+	house STRING
+) CLUSTERED BY (age) INTO 4 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
 
+INSERT INTO student_age_buckets
+SELECT ssn, first_name, last_name, age, state, house FROM student;
+
+-- on hdfs we have 4 files, 1 per bucket
+-- the first bucket has ages 20,24,28,32,...
+-- the second has 21,25,29,33,...
+-- ...
+
+-- we combine these two techniques, so we can bucket + partition
+CREATE TABLE student_partition_bucket (
+	ssn STRING,
+	first_name STRING,
+	last_name STRING,
+	age INT,
+	state STRING
+) PARTITIONED BY (house STRING)
+CLUSTERED BY (age) INTO 4 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+INSERT INTO student_partition_bucket PARTITION(house)
+SELECT ssn, first_name, last_name, age, state, house FROM student;
+
+-- What we'll end up with here is directories inside the table, appropriate to our partitions
+-- then multiple files in each partition, for the buckets.
 
 -- todo check partition by decimal value
+
+-- Bucketing with non-numeric columns uses the hashcode.  If we bucket by house, all the Hufflepuff records are guaranteed to end up in the same bucket.
+CREATE TABLE house_buckets (
+	ssn STRING,
+	first_name STRING,
+	last_name STRING,
+	age INT,
+	state STRING,
+	house STRING
+) CLUSTERED BY (house) INTO 3 BUCKETS
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',';
+
+INSERT INTO house_buckets
+SELECT ssn, first_name, last_name, age, state, house FROM student;
+
+--looking at this on HDFS, our first bucket contains Gryffindor, Hufflepuff, Slytherin
+-- our second bucket contains nothing
+-- our third bucket contains Ravenclaw
+-- This is a (pretty extreme) example of *skew*
+-- We want to bucket on high cardinality columns to avoid precisely this situation.
+
+-- A nice example of a field to bucket on is unique id.  It's high cardinality, and we rarely select large amounts of data based on unique identifier.
+
 
