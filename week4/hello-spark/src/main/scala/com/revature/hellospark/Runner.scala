@@ -57,7 +57,21 @@ object Runner {
     // let's get some results and print them out, take(10) is the action:
     mrwcRdd.take(10).foreach(println)
 
+    // We've mentioned that RDDs contain their lineage -- the process that produced them
+    // we can see the lineage for any RDD by checking out its debugstring
     println(mrwcRdd.toDebugString)
+
+    // each indentation is a *stage*, *stages* contain tasks and we get a new stage every time we shuffle
+    // The number in () for each stage is the number of partitions at that stage.
+
+//     (2) ShuffledRDD[17] at sortByKey at Runner.scala:54 []
+//        +-(2) ShuffledRDD[14] at reduceByKey at Runner.scala:52 []
+//          +-(2) MapPartitionsRDD[13] at map at Runner.scala:50 []
+//              |  MapPartitionsRDD[12] at filter at Runner.scala:49 []
+//              |  MapPartitionsRDD[11] at flatMap at Runner.scala:47 []
+//              |  somelines.txt MapPartitionsRDD[10] at textFile at Runner.scala:46 []
+//              |  somelines.txt HadoopRDD[9] at textFile at Runner.scala:46 []
+// one job, 3 stages, 7 tasks.  Each stage has 2 partitions
 
     
   }
