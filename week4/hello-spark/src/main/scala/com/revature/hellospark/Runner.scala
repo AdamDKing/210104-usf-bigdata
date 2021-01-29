@@ -24,9 +24,26 @@ object Runner {
     // more specifically, SparkContext is the entrypoint for working with RDDs, the central abstraction
     // we'll see later on other ways of working with Spark, but those will be built on top of RDDs
     val sc = new SparkContext(conf)
+    sc.setLogLevel("ERROR") // setting the log level to ERROR means that log messages below
+    // ERROR won't appear in the output
+    // log levels (kind of standard): OFF > FATAL > ERROR > WARN > INFO > DEBUG > TRACE > ALL
 
     helloDemo(sc)
 
+    fileDemo(sc)
+
+  }
+
+  def fileDemo(sc: SparkContext) = {
+    //another way to create an RDD: from file.  second arg is suggested minimum partitions
+    val distributedFile = sc.textFile("somelines.txt", 3)
+
+    val lineLengths = distributedFile.map(_.length())
+
+    //reduce is another action.  Use to take all the values in the RDD and reduce them to a single
+    // value.  Reduce is a higher order function, meaning it takes a function to describe
+    // this reduction
+    println(s"Total Line Lengths: ${lineLengths.reduce(_ + _)}")
   }
 
   def helloDemo(sc: SparkContext) = {
@@ -42,7 +59,7 @@ object Runner {
     val dataPlusTwo = distributedData.map(_ + 2)
 
     //another transform
-    val sampledData = distributedData.sample(false, 0.5, 10L)
+    val sampledData = distributedData.sample(false, 0.5, 11L)
 
     val cachedData = sampledData.cache()
 
@@ -52,9 +69,8 @@ object Runner {
     // make use of the results of RDDs, which means the RDDs actually run.
 
     //Let's use collect
+    println("Collect output:")
     println(cachedData.collect().mkString(" "))
-
-
 
   }
 }
