@@ -32,6 +32,85 @@ object Runner {
 
     fileDemo(sc)
 
+    closureDemo(sc)
+
+    mapReduceWordCountDemo(sc)
+
+  }
+
+  def mapReduceWordCountDemo(sc: SparkContext) = {
+    // we'll just quickly write the spark version of our mapreduce word count
+    // MapReduce sorts during the shuffle and sort
+    // shuffles in Spark don't necessarily sort, so we'll have to do it manually to get the same output
+
+    val mrwcRdd = sc.textFile("somelines.txt")
+      .flatMap(_.split("\\s+")) 
+      //split lines on spaces and flatmap to words
+      .filter(_.length() > 0)
+      .map((_, 1)) 
+      //map words to key, value pairs: (word, 1)
+      .reduceByKey(_ + _)
+      // a shuffle happens when we reduce by key!
+      .sortByKey()
+
+    // all the above are transformations, so nothing has happened yet
+    // let's get some results and print them out, take(10) is the action:
+    mrwcRdd.take(10).foreach(println)
+
+    println(mrwcRdd.toDebugString)
+
+    
+  }
+
+  def closureDemo(sc: SparkContext) = {
+    // operations are broken up into tasks that run on the cluster
+    // these tasks rely on values in memory
+    // the *closure* of a task is all the variables and methods that the executor 
+    // (the thing that runs the task) needs to complete the task.  Spark handles this for us
+    // but we should know about it.
+    // What we write as one value in our driver application here
+    // become multiple values in memory distributed across the cluster
+
+    //4 examples, using good and bad methods of having shared variables
+    val listRdd = sc.parallelize(List(1,3,5,7,9), 3)
+
+    //compute a sum, naive (bad) version:
+    var sum = 0;
+    //foreach is an action
+    listRdd.foreach(sum += _)
+
+    //behaviour is undefined, *may* work locally?
+    println(s"bad sum is: $sum")
+
+    //all of the addition to sum happened in tasks spread out across the cluster, no way
+    // to retrieve/combine those values
+
+    //compute a sum, good version:
+    val sumAccumulator = sc.longAccumulator("goodsum")
+
+    listRdd.foreach(sumAccumulator.add(_))
+
+    println(s"good sum is: ${sumAccumulator.value}")
+
+    //The next 2 examples use broadcast.  Not using a broadcast variable when you ought to
+    // isn't catastrophic, it will just make your jobs slower.  When exactly to use a broadcast variable
+    // is a bit of a judgment call, it depends on the job and the cluster.
+
+    //Example: filter a list based on a cutoff value shared across the cluter
+
+    val cutoff = 4
+
+    println(s"OK List: ${listRdd.filter(_ > cutoff).collect().mkString(" ")}")
+
+    //the above works just fine.  our cutoff val is copied and sent along with *every* task
+
+    val cutoffBroadcast = sc.broadcast(4)
+
+    println(s"good List: ${listRdd.filter(_ > cutoffBroadcast.value).collect().mkString(" ")}")
+
+    //good list and OK list are going to be the same
+    // the major advantage of broadcast variables appears when you have a *large* read only value.
+
   }
 
   def fileDemo(sc: SparkContext) = {
@@ -71,6 +150,9 @@ object Runner {
     //Let's use collect
     println("Collect output:")
     println(cachedData.collect().mkString(" "))
+
+    println("hello demo debugstring:")
+    println(cachedData.toDebugString)
 
   }
 }
