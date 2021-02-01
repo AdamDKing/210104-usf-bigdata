@@ -25,7 +25,7 @@ Running Spark:
 - cluster mode: this runs on Spark on a cluster, always used in production:
   - Mesos was the original cluster manager and is still supported
   - Spark can run on kubernetes (K8s) clusters
-  - YARN.  Spark can run on a YARN cluster, this is the option we'll use.  There are actually two ways we can make this happen.  We can write a Driver program for Spark that communicates with an ApplicationMaster running our job on the cluster.  We can also submit our job to the cluster and have our Driver program run inside the ApplicationMaster.  This is "local" vs "cluster" mode and we'll see it in the wild.
+  - YARN.  Spark can run on a YARN cluster, this is the option we'll use.  There are actually two ways we can make this happen.  We can write a Driver program for Spark that communicates with an ApplicationMaster running our job on the cluster.  We can also submit our job to the cluster and have our Driver program run inside the ApplicationMaster.  This is "client" (Adam had this wrong yesterday) vs "cluster" mode and we'll see it in the wild.
 
 #### RDDs : Resilient Distributed Datasets
 
@@ -33,7 +33,28 @@ RDDs are the central abstraction of Spark.  An RDD is a read-only collection of 
 
 RDDs are lazy and ephemeral by default.  Lazy means that they are not immediately executed when we create them.  RDDs are only actually executed on the cluster when we call a *action* on them.  Some of the methods we can call on RDDs are *transformations* which are lazy (map, filter), others are *actions* which cause actual computation to occur (reduce, collect, foreach).  Anything that is "lazy" isn't evaluated until absolutely necessary.  Ephemeral just means temporary -- RDDs are removed from memory after they are used.  This is standard behaviour, most everything we store in memory is removed after we're done with it.  We mention this specifically because we have the option to .cache RDDs, saving them in memory to speed up future processing.  We'll actually have many options for caching RDDs, not just in memory.
 
+#### Actions and Transformations
+
+Actions do something with the result of an RDD, and so cause its execution.  Transformations produce an RDD from another RDD and so don't cause execution.  If we never call an action on an RDD, none of the processing described for that RDD will run.
+
+#### Shared Variables
+
+RDDs exist across the cluster as some number of partitions.  Remember partitions are like splits in MapReduce.  All the transformations performed on an RDD occur as tasks happening on a partition.  If we have 10 partitions in our RDD, spread out across the cluster, then a transformation on that RDD will involve 10 tasks, spread out across the cluster.
+
+Some kinds of transformations require data from multiple partitions.  These transformations cause a "shuffle", which we'll care deeply about later but we'll just mention for now.
+
+So, these tasks running on partitions distributed across a cluster sometimes need to have some information shared between them.  The first way that information is shared with tasks is by just including including that information in the *closure* of the task.  This sounds a little fancy but all it means is that the information (vals and vars) we declare in the scope of tasks is passed along with those tasks across the cluster.  This is simple functionality, just the things we define in the scope of a task are included.  The only real problems here are (1) we're making copies of this data that we send with every single task, which can be expensive and (2) the data sent in a closure cannot be effectively edited across the cluster.
+
+There are 2 kinds of shared variables in Spark: Broadcast variables and Accumulators: 
+- Broadcast variables solve the first problem.  If we broadcast a value, that value isn't copied with every task, instead it's copied to every *machine*.  For some jobs, this can dramatically speed up processing.
+- Accumulators solve the second problem.  Accumulators let tasks across the cluster "add to" the global accumulator.  Accumulators don't actually have to be numbers, but they do need to have some concept of addition that tasks across the cluster can use to aggregate their value.  The reason we have accumulators using this concept of addition instead of just being mutable is to avoid multithreading woes.  This way we don't need to worry about the exact order tasks contribute to the accumulator.  The addition for accumulators should be commutative (1 + 2 = 2 + 1).
+
+A final note on accumulators : to use accumulators correctly, they should:
+- option 1: be added to only in actions, not in transformations
+- option 2: have an idempotent addition method
+
+The reason for the above rules is that RDDs are fault tolerant and can be recomputed on the fly.  We're not guarateed that a given transformation will only run once.
+
 #### caching + persisting, shared variables, actions + transformations
 
-//TODO: spark install!
 
