@@ -26,5 +26,24 @@ Each RDD contains the processes necessary to reocmpute itself.  We can see the *
 
 Within a stage, tasks proceed in order on each split.  If we map then filter, each split will independently go through a map task, then the output of that map task will go through a filter task.  Between stages, splits might be totally or partially recombined.  The transition between stages corresponds to operations that require a *shuffle*.  The shuffle is a similar operation to MapReduce shuffle, during a shuffle we transform the dataset as a whole rather than transforming individual records.  Sorts, Joins, ReduceByKey, are the kind of transformations that cause a shuffle.  These operations require operating on the entire dataset, rather than just transforming individual records.
 
+#### Applications, Jobs, Stages, Tasks
+- An Application is one call to spark-submit with a .jar file, one program, one SparkContext.  RDDs that are cached in an application can be reused.
+- A Job is what happens each time we perform an action.  An application can have 1 or more jobs.  Jobs consist of stages containing tasks
+- Each stage is a series of tasks that run on the same data (the same splits).  Jobs are divided up into stages based on how many times we shuffle.  Each shuffle starts a new stage, on the splits produced by that shuffle.  A Job might have 1 or many stages.
+- Tasks are transformations like map or filter that operate on single splits.  Tasks exist in order within stages.  The *wide* transformations that cause shuffler also produce tasks.
 
+A quick note on shuffling and caching:  Just like in MapReduce, all data is written to disk before a shuffle occurs.  This means we get some caching "for free" whenever we shuffle, since the shuffle inputs are written to disk.  Spark will skip entire stages if possible by using the data already stored on disk.
 
+### AWS : Amazon Web Services
+
+AWS is one major cloud provider, other major contenders are Google's GCP (Google Cloud Platform) and Microsoft's Azure.  AWS is the largest cloud provider, meaning it's used the most in the wild.
+
+AWS provides services that let us, at the most basic level, rent computers in the cloud.  The cloud is jsut someone else's computer, so when we're renting computers in the cloud, we're really jsut using computers running in a datacenter somewhere.  One of the benefits of using a cloud provider is that we don't have to worry (too much) about the location and setup of the physical servers.
+
+If we just want a server (some bundle of computational resources), AWS provides us with EC2 instances.  EC2 stands for Elastic Compute Cloud.  When we set up an EC2 instance, we decide how much memory, processing power, and disk space we want attached, and corresponding to that, how much we pay AWS for the use of the instance.  This is a bit of a simplification, since AWS sells resources more efficiently than just providing you a fixed amount of memory/processing power.  Notably, EC2 instances are *elastic* which means their resources can grow and shrink over time based on demand/cost.  Fundemental value proposition of the cloud: scale out to meet demand and scale in to reduce costs.
+
+We can have AWS attach disks to our EC2 instances and use those hard disks for storage, but AWS also provides S3 (Simple Storage Service) for storage of files and directories.  S3 is practically infinitely scalable and we can access files stored on S3 through our browsers, from the command line, and programmatically in our scala code.  Storing your data and output on S3 has some advantages compared to storing it on disk, but it can also be expensive.
+
+EC2 and S3 are the basics of AWS, AWS provides many services in addition to those (and provides of configurable settings for your use of S3 and EC2).  We're going to be using EMR (Elastic MapReduce).  EMR is essentially paying Amazon not just for the computational resources in a cluster of machines for big data jobs, but also paying Amazon to install + manage Hadoop on that cluster of machines.  When we spin up an EMR cluster, AWS will spin up some number of EC2 instances in that cluster, network them together, and install + run Hadoop (YARN) on those machines.  While we could use HDFS with EMR, we're going to use S3 instead. 
+
+Many AWS services work similarly, where we pay Amazon not just for resources, but also to install + manage software.  RDS (Relational Database Service) is another example, we can pay Amazon for a managed PostgreSQL server.
