@@ -47,3 +47,5 @@ We can have AWS attach disks to our EC2 instances and use those hard disks for s
 EC2 and S3 are the basics of AWS, AWS provides many services in addition to those (and provides of configurable settings for your use of S3 and EC2).  We're going to be using EMR (Elastic MapReduce).  EMR is essentially paying Amazon not just for the computational resources in a cluster of machines for big data jobs, but also paying Amazon to install + manage Hadoop on that cluster of machines.  When we spin up an EMR cluster, AWS will spin up some number of EC2 instances in that cluster, network them together, and install + run Hadoop (YARN) on those machines.  While we could use HDFS with EMR, we're going to use S3 instead. 
 
 Many AWS services work similarly, where we pay Amazon not just for resources, but also to install + manage software.  RDS (Relational Database Service) is another example, we can pay Amazon for a managed PostgreSQL server.
+
+## We'll pick up with writing jarfiles for EMR tomorrow morning
