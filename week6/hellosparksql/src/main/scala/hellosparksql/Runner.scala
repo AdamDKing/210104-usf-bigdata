@@ -2,6 +2,7 @@ package hellosparksql;
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions
+import org.apache.spark.sql.DataFrameReader
 
 object Runner {
   def main(args: Array[String]): Unit = {
@@ -96,13 +97,69 @@ object Runner {
     // access underlying rdd.  Since we're dealing with a DataFrame, which is a DataSet[Row]
     // the RDD contains Row objects
     println(demoQuery.rdd.toDebugString)
-    
 
+    //let's use a DataSet
+    // DataSets are strongly typed, so we'll need to write a case class for the data contained within
+    // See the Person + Name case classes below!
 
+    //We can convert a DataFrame to a DataSet of Person using .as[Person]:
+    val ds = df.as[Person]
 
+    //DataFrame looks like its own type for legacy reasons, but under the hood it's just a DataSet[Row]
+    // so its nothing too different.  TODO: find the source!
 
+    //We tend to work with DataSets more similarly to working with RDDs, by using higher order functions:
+    ds.filter(_.name.first.length() < 6).show()
+
+    // we can chain methods, similar to rdds and earlier collections
+    val demoQuery2 = ds.filter(_.age > 30)
+      .map((person) => {s"${person.name.first} ${person.name.last}"})
+      .toDF("Full Name") //String has a "value" column, so change to DF to provide column name
+
+    demoQuery2.show()
+
+    demoQuery2.explain(true)
+    //something to note about our explanation here is the difference in what catalyst knows about DF vs DS
+    // in demoQuery2 we only really care about name and age, we filter on age and we produce output
+    // based on name.  If we were using a dataframe, catalyst wouldn't even bother reading/processing the other columns
+    // Using a DataSet, catalyst doesn't know enough about our data processing to make the optimization
+    //The big problem for catalyst here is the map and filter lambdas.  It has no way of knowing which parts
+    // of our Person records we're manipulating inside of lambda functions -- it can't look inside our functions.
+
+    //As a bit of a tradeoff, the case classes within DataSets are more efficiently serialized + deserialized
+    // than generic Row objects in DataFrames.
+
+    //real quick, using SQL:
+    // we can create temp views and write SQL queries to select from them
+    //create a dataset:
+    val names = spark.createDataset(List(Name("Adam", "King"), Name("Jeff", "Goldblum")))
+
+    //create a temp view so I can work with SQL queries:
+    names.createOrReplaceTempView("names")
+
+    //use spark.sql to qrite sql queries.  This will return a DataFrame
+    spark.sql("SELECT * FROM names").show()
+
+    //So Spark SQL provides 3+1 methods for manipulating and processing your data
+    // DataFrames
+    // DataSets
+    // SQL
+    // (and underlying RDDs)
+    //We can freely convert between them
+    // writing SQL statements returns DataFrames
+    // creating temp views transforms DF/DS to SQL tables
+    // .as turns a DF to a DS
+    // .toDF turns a DS to a DF
+
+    //You should know a bit about each, but you're free to use whatever tool seems most appropriate
+    // Keep in mind the DF/DS have some efficiency tradeoffs
 
 
 
   }
+
+  case class Person(_id: String, index: Long, age: Long, eyeColor: String, phone: String, address: String, name: Name) {}
+
+  case class Name(first: String, last: String) {}
+
 }
