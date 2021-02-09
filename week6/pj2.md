@@ -21,4 +21,4 @@ Requirements:
 - Git + GitHub
 
 ### Due Date
-- Presentations will take place on Monday, 11/23
+- Presentations will take place on Monday, 2/22
