@@ -10,6 +10,10 @@ import org.apache.http.client.utils.URIBuilder
 import org.apache.http.client.methods.HttpGet
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.io.PrintWriter
+import java.nio.file.Files
+import java.nio.file.Paths
+import scala.concurrent.Future
 
 object Runner {
   def main(args: Array[String]): Unit = {
@@ -38,12 +42,59 @@ object Runner {
   }
 
   def helloTweetStream(spark: SparkSession): Unit = {
+    import spark.implicits._
 
     //grab a bearer token from the environment
     //never hardcode your tokens (never just put them as a string in your code)
     val bearerToken = System.getenv(("TWITTER_BEARER_TOKEN"))
 
-    tweetStreamToDir(bearerToken)
+    //writes all the tweets from twitter's stream into a directory
+    // by default hits the sampled stream and uses "twitterstream" as the directory
+    // We'll run it in the background using a Future:
+    import scala.concurrent.ExecutionContext.Implicits.global
+    Future {
+      tweetStreamToDir(bearerToken)
+    }
+
+    //We're going to start with a static DF
+    // both to demo it, and to infer the schema
+    // streaming dataframes can't infer schema
+    // this will fail if you haven't already streamed down some twitter data.
+    val staticDf = spark.read.json("twitterstream")
+
+    //streamDf is a stream, using *Structured Streaming*
+    val streamDf = spark.readStream.schema(staticDf.schema).json("twitterstream")
+
+    //Example just getting the text:
+    // streamDf
+    //   .select($"data.text")
+    //   .writeStream
+    //   .outputMode("append")
+    //   .format("console")
+    //   .start()
+    //   .awaitTermination()
+
+    //Most used twitter handles, aggregated over time:
+    
+    // regex to extract twitter handles
+    val pattern = ".*(@\\w+)\\s+.*".r
+
+    streamDf
+      .select($"data.text")
+      .as[String]
+      .flatMap(text => {text match {
+        case pattern(handle) => {Some(handle)}
+        case notFound => None
+      }})
+      .groupBy("value")
+      .count()
+      .sort(functions.desc("count"))
+      .writeStream
+      .outputMode("complete")
+      .format("console")
+      .start()
+      .awaitTermination()
+
 
   }
 
@@ -72,9 +123,22 @@ object Runner {
         new InputStreamReader(entity.getContent())
       )
       var line = reader.readLine()
+      //initial filewriter, replaced every linesPerFile
+      var fileWriter = new PrintWriter(Paths.get("tweetstream.tmp").toFile)
+      var lineNumber = 1
+      val millis = System.currentTimeMillis() //get millis to identify the file
       while (line != null) {
-        println(line)
+        if (lineNumber % linesPerFile == 0) {
+          fileWriter.close()
+          Files.move(
+            Paths.get("tweetstream.tmp"),
+            Paths.get(s"$dirname/tweetstream-$millis-${lineNumber/linesPerFile}"))
+          fileWriter = new PrintWriter(Paths.get("tweetstream.tmp").toFile)
+        }
+
+        fileWriter.println(line)
         line = reader.readLine()
+        lineNumber += 1
       }
 
     }
