@@ -3,17 +3,24 @@ package hellosparksql;
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions
 import org.apache.spark.sql.DataFrameReader
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.client.config.CookieSpecs
+import org.apache.http.client.utils.URIBuilder
+import org.apache.http.client.methods.HttpGet
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 object Runner {
   def main(args: Array[String]): Unit = {
-    println("get here, we'll be back in 10, at noon")
 
     //initialize a SparkSession, by convention called spark
     //SparkSession is the entrypoint for a Spark application using Spark SQL
     // it's new in Spark 2 + unifies older context objects.
     //SparkSession is different from SparkContext in that we can have multiple sessions
     // in the same runtime, where we only wanted 1 SparkContext per application.
-    val spark = SparkSession.builder()
+    val spark = SparkSession
+      .builder()
       .appName("Hello Spark SQL")
       .master("local[4]")
       .getOrCreate()
@@ -24,11 +31,56 @@ object Runner {
 
     spark.sparkContext.setLogLevel("WARN")
 
-    helloSparkSql(spark)
-    
+    //helloSparkSql(spark)
+
+    helloTweetStream(spark)
+
   }
 
-  def helloSparkSql(spark: SparkSession):Unit = {
+  def helloTweetStream(spark: SparkSession): Unit = {
+
+    //grab a bearer token from the environment
+    //never hardcode your tokens (never just put them as a string in your code)
+    val bearerToken = System.getenv(("TWITTER_BEARER_TOKEN"))
+
+    tweetStreamToDir(bearerToken)
+
+  }
+
+  def tweetStreamToDir(
+      bearerToken: String,
+      dirname: String = "twitterstream",
+      linesPerFile: Int = 1000
+  ) = {
+    //a decent chunk of boilerplate -- from twitter docs/tutorial
+    //sets up the request we're going to be sending to Twitter
+    val httpClient = HttpClients.custom
+      .setDefaultRequestConfig(
+        RequestConfig.custom.setCookieSpec(CookieSpecs.STANDARD).build()
+      )
+      .build()
+    val uriBuilder: URIBuilder = new URIBuilder(
+      "https://api.twitter.com/2/tweets/sample/stream"
+    )
+    val httpGet = new HttpGet(uriBuilder.build())
+    //set up the authorization for this request, using our bearer token
+    httpGet.setHeader("Authorization", s"Bearer $bearerToken")
+    val response = httpClient.execute(httpGet)
+    val entity = response.getEntity()
+    if (null != entity) {
+      val reader = new BufferedReader(
+        new InputStreamReader(entity.getContent())
+      )
+      var line = reader.readLine()
+      while (line != null) {
+        println(line)
+        line = reader.readLine()
+      }
+
+    }
+  }
+
+  def helloSparkSql(spark: SparkSession): Unit = {
     //break intro demo off into a method, add import here as well.
     import spark.implicits._
 
@@ -49,7 +101,8 @@ object Runner {
     // this gets us Column objects instead of just strings.  These can be used in expressions
     df.select($"name", $"age").show()
 
-    df.select($"name", ($"age" + 10).as("age plus ten")).show() // adds 10 to every value in the age column
+    df.select($"name", ($"age" + 10).as("age plus ten"))
+      .show() // adds 10 to every value in the age column
 
     //fruit csv interlude
     val dfCsv = spark.read.option("header", "true").csv("fruits.csv")
@@ -81,7 +134,8 @@ object Runner {
     df.select(functions.round($"age", -1)).show() // round age to nearest 10
 
     //average age by eye color for people with a first name less than 6 characters in length:
-    val demoQuery = df.filter(functions.length($"name.first") < 6)
+    val demoQuery = df
+      .filter(functions.length($"name.first") < 6)
       .groupBy($"eyeColor")
       .agg(functions.avg($"age"))
 
@@ -112,9 +166,12 @@ object Runner {
     ds.filter(_.name.first.length() < 6).show()
 
     // we can chain methods, similar to rdds and earlier collections
-    val demoQuery2 = ds.filter(_.age > 30)
-      .map((person) => {s"${person.name.first} ${person.name.last}"})
-      .toDF("Full Name") //String has a "value" column, so change to DF to provide column name
+    val demoQuery2 = ds
+      .filter(_.age > 30)
+      .map((person) => { s"${person.name.first} ${person.name.last}" })
+      .toDF(
+        "Full Name"
+      ) //String has a "value" column, so change to DF to provide column name
 
     demoQuery2.show()
 
@@ -132,7 +189,8 @@ object Runner {
     //real quick, using SQL:
     // we can create temp views and write SQL queries to select from them
     //create a dataset:
-    val names = spark.createDataset(List(Name("Adam", "King"), Name("Jeff", "Goldblum")))
+    val names =
+      spark.createDataset(List(Name("Adam", "King"), Name("Jeff", "Goldblum")))
 
     //create a temp view so I can work with SQL queries:
     names.createOrReplaceTempView("names")
@@ -154,11 +212,17 @@ object Runner {
     //You should know a bit about each, but you're free to use whatever tool seems most appropriate
     // Keep in mind the DF/DS have some efficiency tradeoffs
 
-
-
   }
 
-  case class Person(_id: String, index: Long, age: Long, eyeColor: String, phone: String, address: String, name: Name) {}
+  case class Person(
+      _id: String,
+      index: Long,
+      age: Long,
+      eyeColor: String,
+      phone: String,
+      address: String,
+      name: Name
+  ) {}
 
   case class Name(first: String, last: String) {}
 
