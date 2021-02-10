@@ -59,7 +59,20 @@ object Runner {
     //We're going to start with a static DF
     // both to demo it, and to infer the schema
     // streaming dataframes can't infer schema
-    // this will fail if you haven't already streamed down some twitter data.
+
+    //Here we're just going to wait until a file appears in our twitterstream directory
+    // or until some reasonable amount of time has passed (30s)
+    var start = System.currentTimeMillis()
+    var filesFoundInDir = false
+    while(!filesFoundInDir && (System.currentTimeMillis()-start) < 30000) {
+      filesFoundInDir = Files.list(Paths.get("twitterstream")).findFirst().isPresent()
+      Thread.sleep(500)
+    }
+    if(!filesFoundInDir) {
+      println("Error: Unable to populate tweetstream after 30 seconds.  Exiting..")
+      System.exit(1)
+    }
+
     val staticDf = spark.read.json("twitterstream")
 
     //streamDf is a stream, using *Structured Streaming*
