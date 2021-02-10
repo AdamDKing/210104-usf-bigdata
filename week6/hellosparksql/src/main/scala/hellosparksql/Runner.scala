@@ -85,10 +85,8 @@ object Runner {
     // Writing a case class and using DataSets would be more initial investment, but
     // would make writing queries like this much easier!
     streamDf
-      .select($"includes.places")
-      .filter(!functions.isnull($"places"))
-      .select(functions.element_at($"places", 1).as("element"))
-      .select($"element.full_name")
+      .filter(!functions.isnull($"includes.places"))
+      .select(functions.element_at($"includes.places", 1)("full_name").as("Place"), ($"data.text").as("Tweet"))
       .writeStream
       .outputMode("append")
       .format("console")
