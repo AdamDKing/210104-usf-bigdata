@@ -55,7 +55,7 @@ object Runner {
     // we just start it running in the background and forget about it.
     import scala.concurrent.ExecutionContext.Implicits.global
     Future {
-      tweetStreamToDir(bearerToken)
+      tweetStreamToDir(bearerToken, queryString = "?tweet.fields=geo&expansions=geo.place_id")
     }
 
     //Here we're just going to wait until a file appears in our twitterstream directory
@@ -76,8 +76,25 @@ object Runner {
     // streaming dataframes can't infer schema
     val staticDf = spark.read.json("twitterstream")
 
+    staticDf.printSchema()
+
     //streamDf is a stream, using *Structured Streaming*
     val streamDf = spark.readStream.schema(staticDf.schema).json("twitterstream")
+
+    //Display placenames as tweets occur.  Have to deal with a good chunk of nested data
+    // Writing a case class and using DataSets would be more initial investment, but
+    // would make writing queries like this much easier!
+    streamDf
+      .select($"includes.places")
+      .filter(!functions.isnull($"places"))
+      .select(functions.element_at($"places", 1).as("element"))
+      .select($"element.full_name")
+      .writeStream
+      .outputMode("append")
+      .format("console")
+      .option("truncate", false)
+      .start()
+      .awaitTermination()
 
     //Example just getting the text:
     // streamDf
@@ -93,27 +110,28 @@ object Runner {
     // regex to extract twitter handles
     val pattern = ".*(@\\w+)\\s+.*".r
 
-    streamDf
-      .select($"data.text")
-      .as[String]
-      .flatMap(text => {text match {
-        case pattern(handle) => {Some(handle)}
-        case notFound => None
-      }})
-      .groupBy("value")
-      .count()
-      .sort(functions.desc("count"))
-      .writeStream
-      .outputMode("complete")
-      .format("console")
-      .start()
-      .awaitTermination()
+    // streamDf
+    //   .select($"data.text")
+    //   .as[String]
+    //   .flatMap(text => {text match {
+    //     case pattern(handle) => {Some(handle)}
+    //     case notFound => None
+    //   }})
+    //   .groupBy("value")
+    //   .count()
+    //   .sort(functions.desc("count"))
+    //   .writeStream
+    //   .outputMode("complete")
+    //   .format("console")
+    //   .start()
+    //   .awaitTermination()
   }
 
   def tweetStreamToDir(
       bearerToken: String,
       dirname: String = "twitterstream",
-      linesPerFile: Int = 1000
+      linesPerFile: Int = 1000,
+      queryString: String = ""
   ) = {
     //a decent chunk of boilerplate -- from twitter docs/tutorial
     //sets up the request we're going to be sending to Twitter
@@ -123,7 +141,7 @@ object Runner {
       )
       .build()
     val uriBuilder: URIBuilder = new URIBuilder(
-      "https://api.twitter.com/2/tweets/sample/stream"
+      s"https://api.twitter.com/2/tweets/sample/stream$queryString"
     )
     val httpGet = new HttpGet(uriBuilder.build())
     //set up the authorization for this request, using our bearer token
@@ -147,7 +165,6 @@ object Runner {
             Paths.get(s"$dirname/tweetstream-$millis-${lineNumber/linesPerFile}"))
           fileWriter = new PrintWriter(Paths.get("tweetstream.tmp").toFile)
         }
-
         fileWriter.println(line)
         line = reader.readLine()
         lineNumber += 1
