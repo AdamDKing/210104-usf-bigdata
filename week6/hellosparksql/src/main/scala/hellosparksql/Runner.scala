@@ -51,14 +51,12 @@ object Runner {
     //writes all the tweets from twitter's stream into a directory
     // by default hits the sampled stream and uses "twitterstream" as the directory
     // We'll run it in the background using a Future:
+    // We're not saving a reference to this future or providing a callback function
+    // we just start it running in the background and forget about it.
     import scala.concurrent.ExecutionContext.Implicits.global
     Future {
       tweetStreamToDir(bearerToken)
     }
-
-    //We're going to start with a static DF
-    // both to demo it, and to infer the schema
-    // streaming dataframes can't infer schema
 
     //Here we're just going to wait until a file appears in our twitterstream directory
     // or until some reasonable amount of time has passed (30s)
@@ -73,6 +71,9 @@ object Runner {
       System.exit(1)
     }
 
+    //We're going to start with a static DF
+    // both to demo it, and to infer the schema
+    // streaming dataframes can't infer schema
     val staticDf = spark.read.json("twitterstream")
 
     //streamDf is a stream, using *Structured Streaming*
@@ -107,8 +108,6 @@ object Runner {
       .format("console")
       .start()
       .awaitTermination()
-
-
   }
 
   def tweetStreamToDir(
