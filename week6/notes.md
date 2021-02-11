@@ -20,3 +20,50 @@ Why the difference?  First, there's a historical difference.  DataFrames were in
 ### SparkContext, SqlContext, HiveContext, SparkSession
 
 We've seen SparkContext, this is how we make + use RDDs.  Spark SQL before Spark 2 used a SQLContext for SQL, DataFrames, DataSets.  It also used a HiveContext for HQL, DataFrames, DataSets.  There three contexts were brought together in Spark 2 as the SparkSession.  From here on out we'll use SparkSession to create DataFrames/DataSets.  At any point we can access the underlying SparkContext if we need to.
+
+### Streaming in Spark
+
+Handling streaming data means that we write data processing pipelines, then those processes operate on data being produced/collected in near-real-time.  Instead of aggregating our 20TB of data over the week and running a Spark job on the weekend to analyze it, we write a streaming job and run the Spark job to analyze the data as it is produced/collected.
+
+In practice, our streaming with Spark will be creating micro-batches under the hood.  So Spark will separate the incoming stream into small chunks for processing.  This is why it's near-real-time instead of real-time.
+
+Spark actually provides two different approaches if we want to handle streaming data.  These are *spark streaming* and *structured streaming*.  Spark streaming is built on core Spark and processes data using a DStream -- a streaming RDD.  Structured streaming is part of Spark SQL and processes data using streaming dataframes/datasets.  These two different parts of the API don't really interfere with each other -- they aren't related under the hood except they're both built using RDDs.  Typically Structured streaming is much easier to use if you're already using Spark SQL.  Typically Spark Streaming allows more fine-grained control over stream processing.  My plan is to just use Structured Streaming.
+
+We've been using structured streaming for Twitter data written to file, all it takes (most of the time) to transform a static analysis to a streaming analysis in Spark SQL is specifying that you're reading a stream + specifying some options.  Structured Streaming essentially just adds records to the bottom of your DataFrame/DataSet as new data comes in.  Your processing operates on these new records as they appear.
+
+#### Output and Format
+
+When we're specifying a stream, we need to specify output and format on that stream.  Format is how the results are delivered to us.  Thus far we've just used "console" to get them appearing on the screen, but we can write to file.
+
+Output mode is an option that lets us specify how we update our output based on the new data.  There are 3 options here:
+- complete : the entire result will be written out.  We saw this with streaming updating twitter handle counts
+- append : only new records produced based on the recent data will be written out.  We saw this with streaming the locations + text of tweets to the console
+- update : only new + updated records will be written out.  This will include new records, similar to append, but it will also include older records if those records have changed.  We *could* use this with our twitter handle count, then we would get twitter handles + counts in the output only when those counts went up.
+
+For Format, we specify a *sink*, which is just a destination for our streaming data:
+- file : we can write to file, using JSON, CSV, parquet, ... (we'll see some parquet this week)
+- console : write output to console for debugging
+- foreach : this runs arbitrary computations on the data as it is produced.
+- kafka : write output to a kafka stream.  We'll talk Apache Kafka next week!
+
+### Parquet
+
+Apache Parquet is a file format used with Apache products + beyond!  It's just a file format, so we can use it in our code (writing + reading parquet files) the same way we use .csv, or .json.  The parquet files on disk will look quite different, but we don't need to worry about those differences in our code.
+
+Parquet files on disk will be stored as files in a .parquet dir.  The contents are both encoded and compressed, so opening them with a text editor won't go very well.  We can see a bit of info about the contents -- Parquet is a *columnar* storage format, meaning it stores columns in order on disk instead of storing rows in order on disk.  In a .csv file, all the info about Sam Jones is stored in the same location in the file (one row).  In parquet, all that information is spread out.  Instead, all the SSNs are grouped together in parquet, and all the first_names, and all the ages, ...
+
+This columnar storage, *and* the encoding + compression involved in parquet files makes parquet a very good format for some uses, and a very poor format for other uses.  Parquet is very good at storing data efficiently on disk (takes up much less space than a csv file), and parquet is very good for rapid retrieval of data, including retrieving data based on some condition.  Parquet readers can do something like "querying" parquet files for data.  In exchange for these advantages, Parquet is time-consuming to write and *very* difficult to edit.  Most often the answer to "how do we change the information in this parquet file?" is, "you don't".  We use parquet when we have a large amount of data we want to write once and then read repeatedly.  We definitely don't use parquet when we have data that must be updated in the future.
+
+The columnar format of Parquet lets parquet use a few tricks for efficiently storing data.  There are more than the ones we'll mention here:
+- Dictionary Encoding:  If a column has low cardinality (relatively small number of unique values), parquet will encode those values using a dictioanry to save space.  For example:
+  - Gryffindor, Gryffindor, Hufflepuff, Gryffindor, Slytherin, Slytherin, Ravenclaw, Gryffindor, ...
+  - 1, 1, 2, 1, 3, 3, 4, 1, ...
+  - Instead of taking up a lot of space storing the same value repeatedly, parquet will store a number of bytes repeatedly and use a dictionary to keep the actual values associated with those bytes. 1: Gryffindor, 2: Hufflepuff, 3: Slytherin, 4: Ravenclaw.  Instead of storing the ~144 bit string Gryffindor 100000 times, parquet stores the ~2 bit number 1 100000 times.
+- Run Length Encoding (RLE): If a column has many repeated values that occur in a row, parquet will encode the "run" of values instead of each individual value.  For example:
+  - Gryffindor, Gryffindor, Gryffindor, Gryffindor, Hufflepuff, Hufflepuff, Hufflepuff, Ravenclaw, Ravenclaw, ...
+  - Gryffindor 4, Hufflepuff 3, Ravenclaw 2, ...
+  - space saving here is quite straightforward.  RLE will only happen on columns that are well-suited for it.
+- Bit packing: Parquet has data types for 32bit, 64bit, and 96bit integers (deprecated), but it will "bit pack" smaller values.  Small integers won't take up their full 32 bits on disk, instead multiple smaller values will be packed into that space.
+
+
+

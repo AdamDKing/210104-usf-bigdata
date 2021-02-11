@@ -1,4 +1,5 @@
 tweetstream-*
+*.parquet
 *.class
 *.log
 *.iml

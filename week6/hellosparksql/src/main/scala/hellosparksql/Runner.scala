@@ -37,7 +37,9 @@ object Runner {
 
     //helloSparkSql(spark)
 
-    helloTweetStream(spark)
+    //helloTweetStream(spark)
+
+    ParquetDemo.run(spark)
 
   }
 
