@@ -66,4 +66,23 @@ The columnar format of Parquet lets parquet use a few tricks for efficiently sto
 - Bit packing: Parquet has data types for 32bit, 64bit, and 96bit integers (deprecated), but it will "bit pack" smaller values.  Small integers won't take up their full 32 bits on disk, instead multiple smaller values will be packed into that space.
 
 
+### Quick Applied Agile (roughly Scrum)
+
+This will be tuned to web dev, some of these processes more/less sense when ported over to data analysis.
+
+We start with a small team of developers (two-pizza team) + other related professionals, in Agile we often want multiple different capabilities on the same team, though not always.  They work on a project specified via *user stories*, which are roughly descriptions of things the product will allow users to do.  Work happens in short, 2-4 week *sprints*.  Each sprint accomplishes some number of users stories and ends with those user stories' functionality being included in the product.
+
+Progress is tracked for the sprint using *story points* for the user stories, a *kanban board* to track completion/progress for stories, and a *burn-down chart* of story point progress over time.  Story points are just some abstract measure of effort required to complete a user story, assigned by the dev team.  A Kanban board is a board that traditionally contains post-it notes or index cards representing stories, and the cards are moved from section to section on the board as progress happens.  The sections on the board roughly correspond to phases in the software development lifecycle (in a software project, since you can do agile processes outside of software).
+
+During the sprint, the entire team meets daily at/around the board.  This meeting is a daily *standup*, named because it's meant to occur while everyone is standing around the board.  This keeps the meeting short.  At standup, team members / user stories report their progress over the past day, plans for the day, and any *blockers*, factors that will prevent some of their work being done.  Standup is not for solving problems, instead it is to keep the entire team informed about the state of the project, and to provide the opportunity to make connections that will help team members solve problems.
+
+### Types of joins
+
+We can join dataframes in Spark SQL, those joins are similar to joins in SQL.  We just call .join on a dataframe, pass it another dataframe, and specify the column or expression to join on.
+
+Under the hood, there are multiple options for how Spark resolves the join.  Joining two DataFrames, which may be GBs or TBs can be a *very* expensive operation.  It requires matching *all* the values across both dataframes, which means it cannot be done as a task in a stage (a narrow transformation), it requires a shuffle in almsot every case.  Two kinds of joins (there are more):
+- Shuffle Hash join: Each dataframe is repartitioned based on the join column.  This ensures that records across the two dataframes with the same join column value will be placed into the same partition.  Then, a hashtable is constructed per partition, out of the smaller dataframe.  This hash table is used to complete the join.  There are other joins that require shuffles, Sort Merge join is one.  All joins that require shuffles are expensive, and they require some tuning.  Whenever we're shuffling + producing new records, we'll need to manually tune the number of partitions.  This is generally true, but especially true in the case of joins, since they both shuffle and produce new records.
+- Broadcast join: Broadcast joins are *much* faster than other joins, this is because they don't require a shuffle.  A broadcast join makes use of *broadcast variables* to send a complete copy of the entire smaller dataframe to every node in the cluster.  Essentially, you just broadcast the smaller table everywhere, instead of shuffling and just sending the necessary pieces to each partition.  Since every node in the cluster has the entire copy of the smaller table, each partition of the larger table has all the data it needs for the join, so a shuffle is not required.  The entire smaller dataframe must be able to fit in memory on every machine in your cluster, which is often a difficult requirement to meet.
+
+Spark SQL will default to broadcast joins if the smaller dataframe is under a specific size (tuneable property), and will otherwise default to, most often, a Sort Merge join.  We can force broadcast, and sometimes this is a good tool to make use of.
 

@@ -39,7 +39,9 @@ object Runner {
 
     //helloTweetStream(spark)
 
-    ParquetDemo.run(spark)
+    //ParquetDemo.run(spark)
+
+    JoinDemo.run(spark)
 
   }
 
