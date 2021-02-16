@@ -41,7 +41,9 @@ object Runner {
 
     //ParquetDemo.run(spark)
 
-    JoinDemo.run(spark)
+    //JoinDemo.run(spark)
+
+    ExtraSpark.run(spark)
 
   }
 
@@ -59,7 +61,7 @@ object Runner {
     // we just start it running in the background and forget about it.
     import scala.concurrent.ExecutionContext.Implicits.global
     Future {
-      tweetStreamToDir(bearerToken, queryString = "?tweet.fields=geo&expansions=geo.place_id")
+      tweetStreamToDir(bearerToken, queryString = "?tweet.fields=geo&expansions=geo.place_id&place.fields=country")
     }
 
     //Here we're just going to wait until a file appears in our twitterstream directory
@@ -90,7 +92,7 @@ object Runner {
     // would make writing queries like this much easier!
     streamDf
       .filter(!functions.isnull($"includes.places"))
-      .select(functions.element_at($"includes.places", 1)("full_name").as("Place"), ($"data.text").as("Tweet"))
+      .select(functions.element_at($"includes.places", 1)("country").as("Country"), ($"data.text").as("Tweet"))
       .writeStream
       .outputMode("append")
       .format("console")
