@@ -36,7 +36,7 @@ Kafka provides the tools to achieve effectively-once delivery by providing uniqu
 
 Transactions are also possible which provide exactly-once delivery, but most often we're happy with effectively-once delivery.
 
-Each consumer of a kafka topic has an *offset* in that topic, the position in time/the log that it is currently reading from.  In at-most-once delivery, the broker keeps track of the offset and increments it as it sends out new events.  In at-least-once delivery, the consumer keeps track of the offset and updates the offset only after processing is successful.
+Each consumer of a kafka topic has an *offset* in that topic, the position in time/the log that it is currently reading from.  In at-most-once delivery, the broker keeps track of the offset and increments it as it sends out new events.  In at-least-once delivery, the consumer keeps track of the offset and updates the offset only after processing is successful.  (to be continued...)
 
 
 
